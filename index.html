@@ -72,8 +72,8 @@
   // =====================================================================
   window.MAP_OBJECTS_SCATTER = {
     seed: 12345,       // ganti angka ini kalau mau pola sebarannya berubah/diacak ulang
-    tree: { count: 40, image: 'pohon.png', width: 90, height: 110, collisionInset: 22 },
-    rock: { count: 25, image: 'batu.png',  width: 56, height: 40 },
+    tree: { count: 150, image: 'pohon.png', width: 90, height: 110, collisionInset: 22 },
+    rock: { count: 90,  image: 'batu.png',  width: 56, height: 40 },
   };
 
 
@@ -5110,12 +5110,6 @@ function drawMapObject(sx, sy, obj) {
   // sx,sy = posisi titik kaki (anchor) objek di layar. Gambar ditaruh relatif dari situ.
   const drawX = sx - obj.w/2;
   const drawY = obj.anchor === 'center' ? sy - obj.h/2 : sy - obj.h;
-
-  // Bayangan tipis di tanah biar objek tidak kelihatan "melayang".
-  ctx.fillStyle = 'rgba(0,0,0,0.16)';
-  ctx.beginPath();
-  ctx.ellipse(sx, obj.anchor === 'center' ? sy + obj.h/2 : sy, obj.w*0.32, obj.w*0.14, 0, 0, Math.PI*2);
-  ctx.fill();
 
   if (obj.img && obj.loaded) {
     ctx.drawImage(obj.img, drawX, drawY, obj.w, obj.h);
