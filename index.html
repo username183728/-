@@ -415,15 +415,6 @@
   }
   #partyBadge.visible { display: flex; }
 
-  #lobbyPartyBtn {
-    position:absolute; left:20px; bottom:24px; z-index:3;
-    background: rgba(24,24,24,0.55); border: 1px solid rgba(150,150,150,0.5); color: #eaeaea;
-    border-radius:12px; padding:14px 18px; font-weight:600; font-size:13px; cursor:pointer;
-    font-family: 'Poppins', sans-serif; display:flex; align-items:center; justify-content:center; gap:6px;
-    backdrop-filter: blur(8px);
-  }
-  #lobbyPartyBtn:active { filter: brightness(1.2); }
-
   #lobbySelectedMapBtn {
     position:absolute; right:20px; bottom:24px; z-index:3;
     background: rgba(24,24,24,0.55); border: 1px solid rgba(211,211,211,0.5); color: #eaeaea;
@@ -677,21 +668,6 @@
   }
   #hudExpBarWrap { width:100%; height:4px; background:rgba(255,255,255,0.15); border-radius:3px; overflow:hidden; margin-top:1px; }
   #hudExpBar { height:100%; background: linear-gradient(90deg,#a2a2a2,#6f6f6f); width:0%; transition:width 0.3s; }
-
-  /* ---------- Lobby quick-menu row ---------- */
-  #lobbyQuickMenu { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); z-index:30; display:flex; gap:10px; }
-  #lobbyQuickMenu button {
-    width:46px; height:46px; border-radius:50%; border:1px solid rgba(255,255,255,0.22);
-    background: rgba(21,21,21,0.7); color:#fff; font-size:19px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; backdrop-filter: blur(6px);
-    box-shadow:0 3px 10px rgba(0,0,0,0.4);
-  }
-  #lobbyQuickMenu button:active { filter:brightness(1.3); transform:scale(0.94); }
-  #lobbyQuickMenu .lqm-label {
-    position:absolute; bottom:-15px; left:50%; transform:translateX(-50%);
-    font-size:8.5px; opacity:0.75; white-space:nowrap;
-  }
-  #lobbyQuickMenu button { position:relative; }
 
   /* ---------- Generic modal panel (Shop / Leaderboard / Achievement / Daily / Spin) ---------- */
   .panel-backdrop {
@@ -1023,19 +999,6 @@
   .lobby-avatar-change-btn:active { background:rgba(0,0,0,0.1); transform:scale(0.97); }
   .lobby-avatar-change-icon { font-size:13px; }
 
-  /* ---- Lobby: kartu menu cepat (Shop / Misi / Hadiah / Rank) ---- */
-  #lobbyQuickMenu { bottom:98px; gap:12px; }
-  #lobbyQuickMenu button {
-    width:66px; height:66px; border-radius:16px; border:none;
-    background:#ffffff; color:#161616; font-size:22px;
-    flex-direction:column; gap:5px;
-    box-shadow:0 2px 10px rgba(20,20,30,0.07);
-  }
-  #lobbyQuickMenu button:active { filter:brightness(0.95); transform:scale(0.96); }
-  #lobbyQuickMenu .lqm-label {
-    position:static; font-size:10.5px; font-weight:600; color:#161616; opacity:1;
-  }
-
   /* ---- Lobby: tombol Map (putih) & Main (hitam), pojok kanan-bawah ---- */
   #lobbySelectedMapBtn.lobby-map-btn {
     position:absolute; right:132px; bottom:20px; top:auto; left:auto; z-index:3;
@@ -1292,16 +1255,6 @@
   <div class="app-version-tag">Versi 1.0.0</div>
   <button id="lobbySelectedMapBtn" type="button" class="lobby-map-btn"><img src="assets/icons/map.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"> <span>Map</span><span id="lobbySelectedMapText" style="display:none;">Meme City</span></button>
   <button id="lobbyPlayBtn" class="lobby-start-btn"><span class="lobby-start-arrow">▶</span> Main</button>
-  <button id="lobbyPartyBtn" type="button" style="display:none;"><img src="assets/icons/party.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"> <span id="lobbyPartyBtnText">Party</span></button>
-
-  <!-- Shop, Misi, Hadiah, dan Rank dihilangkan dari layar lobby sesuai permintaan -->
-  <div id="lobbyQuickMenu" style="display:none;">
-    <button id="lobbyShopBtn" title="Shop"><img src="assets/icons/shop.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Shop</span></button>
-    <button id="lobbyAchievementBtn" title="Misi"><img src="assets/icons/achievement.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Misi</span></button>
-    <button id="lobbyDailyBtn" title="Hadiah"><img src="assets/icons/gift.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Hadiah</span></button>
-    <button id="lobbyLeaderboardBtn" title="Rank"><img src="assets/icons/leaderboard.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Rank</span></button>
-  </div>
-  <button id="lobbySpinBtn" title="Lucky Spin" style="display:none;"><img src="assets/icons/spin.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Spin</span></button>
 </div>
 
 <div id="gameContainer">
@@ -3582,7 +3535,6 @@ let myPartyUnsub = null;
 let pendingInvite = null; // { key, partyId, fromId, fromName }
 
 const partyBtn = document.getElementById('partyBtn');
-const lobbyPartyBtn = document.getElementById('lobbyPartyBtn');
 const partyBadge = document.getElementById('partyBadge');
 const partyPanelBackdrop = document.getElementById('partyPanelBackdrop');
 const partyMemberList = document.getElementById('partyMemberList');
@@ -3676,9 +3628,6 @@ function updatePartyBadge() {
   const inParty = !!(myPartyId && myPartyData && myPartyData.members);
   const count = inParty ? Object.keys(myPartyData.members).length : 0;
   partyBtn.classList.toggle('in-party', inParty);
-  if (lobbyPartyBtn) {
-    document.getElementById('lobbyPartyBtnText').textContent = inParty ? `Party (${count})` : 'Party';
-  }
   if (count > 1) {
     partyBadge.textContent = String(count);
     partyBadge.classList.add('visible');
@@ -3855,7 +3804,6 @@ async function respondToInvite(accept) {
 }
 
 partyBtn.addEventListener('click', openPartyPanel);
-if (lobbyPartyBtn) lobbyPartyBtn.addEventListener('click', openPartyPanel);
 document.getElementById('closePartyPanelBtn').addEventListener('click', closePartyPanel);
 partyCreateBtn.addEventListener('click', createParty);
 partyInviteOpenBtn.addEventListener('click', openPartyInviteList);
@@ -4030,7 +3978,6 @@ function renderAchievements() {
 function openAchievementPanel() { renderAchievements(); document.getElementById('achievementBackdrop').classList.add('visible'); }
 function closeAchievementPanel() { document.getElementById('achievementBackdrop').classList.remove('visible'); }
 document.getElementById('closeAchievementBtn').addEventListener('click', closeAchievementPanel);
-document.getElementById('lobbyAchievementBtn').addEventListener('click', openAchievementPanel);
 document.getElementById('gearAchievementBtn').addEventListener('click', openAchievementPanel);
 // ================= END ACHIEVEMENT SYSTEM =================
 
@@ -4096,7 +4043,6 @@ function renderShop() {
 function openShopPanel() { renderShop(); document.getElementById('shopBackdrop').classList.add('visible'); }
 function closeShopPanel() { document.getElementById('shopBackdrop').classList.remove('visible'); }
 document.getElementById('closeShopBtn').addEventListener('click', closeShopPanel);
-document.getElementById('lobbyShopBtn').addEventListener('click', openShopPanel);
 document.getElementById('gearShopBtn').addEventListener('click', openShopPanel);
 
 function refreshCreatorStudioVisibility() {
@@ -4145,7 +4091,6 @@ async function loadLeaderboard() {
 function openLeaderboardPanel() { document.getElementById('leaderboardBackdrop').classList.add('visible'); loadLeaderboard(); }
 function closeLeaderboardPanel() { document.getElementById('leaderboardBackdrop').classList.remove('visible'); }
 document.getElementById('closeLeaderboardBtn').addEventListener('click', closeLeaderboardPanel);
-document.getElementById('lobbyLeaderboardBtn').addEventListener('click', openLeaderboardPanel);
 document.getElementById('gearLeaderboardBtn').addEventListener('click', openLeaderboardPanel);
 // ================= END LEADERBOARD =================
 
@@ -4196,7 +4141,6 @@ function claimDailyReward() {
 function openDailyPanel() { renderDailyPanel(); document.getElementById('dailyBackdrop').classList.add('visible'); }
 function closeDailyPanel() { document.getElementById('dailyBackdrop').classList.remove('visible'); }
 document.getElementById('closeDailyBtn').addEventListener('click', closeDailyPanel);
-document.getElementById('lobbyDailyBtn').addEventListener('click', openDailyPanel);
 document.getElementById('gearDailyBtn').addEventListener('click', openDailyPanel);
 document.getElementById('claimDailyBtn').addEventListener('click', claimDailyReward);
 // ================= END DAILY REWARD =================
@@ -4239,7 +4183,6 @@ function spinWheel() {
 function openSpinPanel() { document.getElementById('spinBackdrop').classList.add('visible'); }
 function closeSpinPanel() { document.getElementById('spinBackdrop').classList.remove('visible'); }
 document.getElementById('closeSpinBtn').addEventListener('click', closeSpinPanel);
-document.getElementById('lobbySpinBtn').addEventListener('click', openSpinPanel);
 document.getElementById('gearSpinBtn').addEventListener('click', openSpinPanel);
 document.getElementById('doSpinBtn').addEventListener('click', spinWheel);
 // ================= END LUCKY SPIN =================
