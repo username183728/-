@@ -43,7 +43,7 @@
   // melihat objek yang SAMA persis karena ini bagian dari code, bukan
   // pengaturan per-pemain.
   //
-  // Tiap objek: { image, x, y, width, height, collision, collisionInset, anchor }
+  // Tiap objek: { image, x, y, width, height, collision, collisionInset, anchor, type }
   //   image           : nama file / URL PNG (folder sama dengan index.html), latar transparan disarankan.
   //   x, y            : posisi TITIK KAKI objek di dunia (koordinat peta, 0..WORLD_W / 0..WORLD_H).
   //   width, height   : ukuran gambar saat digambar (px).
@@ -52,14 +52,30 @@
   //   collisionInset  : (opsional) perkecil kotak tabrakan dari tepi gambar, dalam px. Default 0.
   //   anchor          : (opsional) 'bottom' (default, titik x,y ada di tengah-bawah gambar, cocok buat
   //                     objek berdiri kayak pohon/rumah) atau 'center' (titik x,y di tengah gambar persis).
+  //   type            : (opsional) 'tree' / 'rock' / 'house' / 'sign' — dipakai buat gambar PLACEHOLDER
+  //                     berbentuk sesuai selama file PNG-nya belum ada / belum kamu isi. Begitu `image`
+  //                     berhasil dimuat, placeholder otomatis diganti gambar aslinya.
   //
   // Contoh (hapus tanda // di depan buat dipakai, ganti nama filenya):
   window.MAP_OBJECTS_CONFIG = [
-    { image: 'pohon.png', x: 600, y: 420, width: 96, height: 120, collision: true, collisionInset: 20 },
-    { image: 'batu.png',  x: 900, y: 700, width: 64, height: 48,  collision: true },
-    { image: 'rumah.png', x: 1400, y: 900, width: 220, height: 200, collision: true, collisionInset: 30, anchor: 'bottom' },
-    { image: 'papan-tanda.png', x: 500, y: 300, width: 40, height: 50, collision: false },
+    { image: 'pohon.png', x: 600, y: 420, width: 96, height: 120, collision: true, collisionInset: 20, type: 'tree' },
+    { image: 'batu.png',  x: 900, y: 700, width: 64, height: 48,  collision: true, type: 'rock' },
+    { image: 'rumah.png', x: 1400, y: 900, width: 220, height: 200, collision: true, collisionInset: 30, anchor: 'bottom', type: 'house' },
+    { image: 'papan-tanda.png', x: 500, y: 300, width: 40, height: 50, collision: false, type: 'sign' },
   ];
+
+  // =====================================================================
+  // ====== SEBAR OBJEK OTOMATIS (biar ada BANYAK pohon/batu tanpa nulis satu-satu) ======
+  // Ini nyebar objek secara ACAK tapi dengan pola yang SELALU SAMA persis di semua HP
+  // (pakai `seed`, bukan acak beneran) — jadi tetap sinkron kayak MAP_OBJECTS_CONFIG di atas.
+  // Ganti angkanya sesuka hati. Set ke 0 kalau tidak mau ada sebar otomatis untuk jenis itu.
+  // =====================================================================
+  window.MAP_OBJECTS_SCATTER = {
+    seed: 12345,       // ganti angka ini kalau mau pola sebarannya berubah/diacak ulang
+    tree: { count: 40, image: 'pohon.png', width: 90, height: 110, collisionInset: 22 },
+    rock: { count: 25, image: 'batu.png',  width: 56, height: 40 },
+  };
+
 
   // =====================================================================
   // ====== ASET SENJATA & PELURU (gampang diganti sendiri lewat PNG) ======
@@ -2945,6 +2961,61 @@ lobbyNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitL
 // Danau tetap (statis) di dalam map supaya tidak terasa sepi
 const LAKE = { x: WORLD_W * 0.72, y: WORLD_H * 0.26, r: 260 };
 
+// ---------- Sebar Objek Otomatis (window.MAP_OBJECTS_SCATTER di atas) ----------
+// Nyebar banyak objek (pohon/batu) secara acak TAPI pakai seeded random, jadi
+// hasilnya selalu SAMA PERSIS di semua HP/pemain (bukan Math.random() biasa yang
+// beda-beda tiap device). Otomatis hindari danau (LAKE) dan area spawn di tengah peta.
+(function scatterMapObjects() {
+  const cfg = window.MAP_OBJECTS_SCATTER;
+  if (!cfg) return;
+
+  // Seeded PRNG sederhana (mulberry32) supaya urutan acaknya deterministik dari `seed`.
+  function mulberry32(seed) {
+    return function() {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const rand = mulberry32(cfg.seed || 1);
+
+  const spawnCx = WORLD_W / 2, spawnCy = WORLD_H / 2, spawnSafeR = 260; // area lega di tengah biar gak numpuk pas spawn
+  const margin = 80; // jarak minimal dari tepi peta
+
+  function isBlocked(x, y) {
+    if (Math.hypot(x - LAKE.x, y - LAKE.y) < LAKE.r + 60) return true; // hindari danau + sedikit buffer
+    if (Math.hypot(x - spawnCx, y - spawnCy) < spawnSafeR) return true; // hindari area spawn
+    return false;
+  }
+
+  const generated = [];
+  ['tree', 'rock'].forEach(type => {
+    const spec = cfg[type];
+    if (!spec || !spec.count) return;
+    for (let i = 0; i < spec.count; i++) {
+      let x, y, tries = 0;
+      do {
+        x = margin + rand() * (WORLD_W - margin * 2);
+        y = margin + rand() * (WORLD_H - margin * 2);
+        tries++;
+      } while (isBlocked(x, y) && tries < 20);
+      if (tries >= 20) continue; // kehabisan percobaan, lewati satu ini
+      generated.push({
+        image: spec.image || '',
+        x, y,
+        width: spec.width || 64,
+        height: spec.height || 64,
+        collision: spec.collision !== false,
+        collisionInset: spec.collisionInset || 0,
+        type
+      });
+    }
+  });
+
+  window.MAP_OBJECTS_CONFIG = (window.MAP_OBJECTS_CONFIG || []).concat(generated);
+})();
+
 // ---------- Placeholder tanah & kotak (siap diganti PNG kamu lewat MAP_TILE_CONFIG) ----------
 const PLACEHOLDER_COLORS = {
   grass: '#5fae3f',
@@ -3000,6 +3071,7 @@ const MAP_OBJECTS = (window.MAP_OBJECTS_CONFIG || []).map(cfg => {
   const obj = {
     img: null, loaded: false,
     x: cfg.x, y: cfg.y, w, h, anchor,
+    type: cfg.type || null,
     drawY: footY,
     collision: !!cfg.collision,
     cx: leftX + inset, cy: topY + inset,
@@ -5048,23 +5120,76 @@ function drawMapObject(sx, sy, obj) {
   if (obj.img && obj.loaded) {
     ctx.drawImage(obj.img, drawX, drawY, obj.w, obj.h);
   } else {
-    // Placeholder selagi gambar belum di-set / belum kemuat: kotak putus-putus + label.
-    ctx.save();
-    ctx.strokeStyle = 'rgba(120,120,120,0.6)';
-    ctx.setLineDash([4,4]);
-    ctx.strokeRect(drawX, drawY, obj.w, obj.h);
-    ctx.setLineDash([]);
-    ctx.fillStyle = 'rgba(120,120,120,0.35)';
-    ctx.fillRect(drawX, drawY, obj.w, obj.h);
-    ctx.fillStyle = 'rgba(60,60,60,0.8)';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('objek?', sx, sy - obj.h/2);
-    ctx.restore();
+    drawPlaceholderShape(obj.type, drawX, drawY, obj.w, obj.h);
   }
 
   // Aktifkan baris di bawah ini sementara kalau mau LIHAT kotak tabrakannya waktu ngatur posisi:
   // if (obj.collision) { ctx.strokeStyle='red'; ctx.strokeRect(obj.cx - camera.x, obj.cy - camera.y, obj.cw, obj.ch); }
+}
+
+// Gambar bentuk placeholder sederhana selagi PNG asli belum di-set / belum kemuat,
+// biar posisi & ukuran objek kelihatan jelas sebelum ganti pakai aset sendiri.
+function drawPlaceholderShape(type, drawX, drawY, w, h) {
+  ctx.save();
+  if (type === 'tree') {
+    // Batang coklat di bawah + tajuk hijau bulat di atas.
+    const trunkW = Math.max(4, w * 0.18), trunkH = h * 0.35;
+    ctx.fillStyle = '#7a5230';
+    ctx.fillRect(drawX + w/2 - trunkW/2, drawY + h - trunkH, trunkW, trunkH);
+    ctx.fillStyle = '#4f8f4f';
+    ctx.beginPath();
+    ctx.ellipse(drawX + w/2, drawY + h*0.42, w*0.48, h*0.42, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(30,60,30,0.5)'; ctx.lineWidth = 2; ctx.stroke();
+  } else if (type === 'rock') {
+    // Gumpalan abu-abu tidak beraturan.
+    ctx.fillStyle = '#8a8a8a';
+    ctx.beginPath();
+    ctx.moveTo(drawX + w*0.10, drawY + h*0.85);
+    ctx.lineTo(drawX + w*0.02, drawY + h*0.45);
+    ctx.lineTo(drawX + w*0.30, drawY + h*0.10);
+    ctx.lineTo(drawX + w*0.70, drawY + h*0.05);
+    ctx.lineTo(drawX + w*0.98, drawY + h*0.40);
+    ctx.lineTo(drawX + w*0.90, drawY + h*0.85);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(50,50,50,0.5)'; ctx.lineWidth = 2; ctx.stroke();
+  } else if (type === 'house') {
+    // Badan rumah coklat muda + atap segitiga merah bata.
+    const bodyY = drawY + h*0.4;
+    ctx.fillStyle = '#c9a876';
+    ctx.fillRect(drawX + w*0.08, bodyY, w*0.84, h*0.6);
+    ctx.fillStyle = '#a5453a';
+    ctx.beginPath();
+    ctx.moveTo(drawX, bodyY);
+    ctx.lineTo(drawX + w/2, drawY);
+    ctx.lineTo(drawX + w, bodyY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#5b3d28';
+    ctx.fillRect(drawX + w*0.42, drawY + h*0.68, w*0.16, h*0.32);
+  } else if (type === 'sign') {
+    // Tiang kayu tipis + papan kecil di atasnya.
+    ctx.fillStyle = '#7a5230';
+    ctx.fillRect(drawX + w/2 - 2, drawY + h*0.35, 4, h*0.65);
+    ctx.fillStyle = '#d8c39a';
+    ctx.fillRect(drawX, drawY, w, h*0.4);
+    ctx.strokeStyle = 'rgba(80,60,30,0.6)'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(drawX, drawY, w, h*0.4);
+  } else {
+    // Tidak ada type yang cocok -> kotak putus-putus generik seperti sebelumnya.
+    ctx.strokeStyle = 'rgba(120,120,120,0.6)';
+    ctx.setLineDash([4,4]);
+    ctx.strokeRect(drawX, drawY, w, h);
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(120,120,120,0.35)';
+    ctx.fillRect(drawX, drawY, w, h);
+    ctx.fillStyle = 'rgba(60,60,60,0.8)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('objek?', drawX + w/2, drawY - 4);
+  }
+  ctx.restore();
 }
 
 // ---------- NPC Target Latihan Tembak: boneka target, HP bar, kena 4x tembak = "mati" lalu respawn ----------
