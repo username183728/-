@@ -58,10 +58,6 @@
   //
   // Contoh (hapus tanda // di depan buat dipakai, ganti nama filenya):
   window.MAP_OBJECTS_CONFIG = [
-    { image: 'pohon.png', x: 600, y: 420, width: 96, height: 120, collision: true, collisionInset: 20, type: 'tree' },
-    { image: 'batu.png',  x: 900, y: 700, width: 64, height: 48,  collision: true, type: 'rock' },
-    { image: 'rumah.png', x: 1400, y: 900, width: 220, height: 200, collision: true, collisionInset: 30, anchor: 'bottom', type: 'house' },
-    { image: 'papan-tanda.png', x: 500, y: 300, width: 40, height: 50, collision: false, type: 'sign' },
   ];
 
   // =====================================================================
@@ -72,44 +68,11 @@
   // =====================================================================
   window.MAP_OBJECTS_SCATTER = {
     seed: 12345,       // ganti angka ini kalau mau pola sebarannya berubah/diacak ulang
-    tree: { count: 150, image: 'pohon.png', width: 90, height: 110, collisionInset: 22 },
-    rock: { count: 90,  image: 'batu.png',  width: 56, height: 40 },
+    tree: { count: 0, image: 'pohon.png', width: 90, height: 110, collisionInset: 22 },
+    rock: { count: 0,  image: 'batu.png',  width: 56, height: 40 },
   };
 
 
-  // =====================================================================
-  // ====== ASET SENJATA & PELURU (gampang diganti sendiri lewat PNG) ======
-  // Taruh file PNG kamu (disarankan persegi, mis. 64x64, latar transparan) di
-  // folder yang sama dengan index.html ini, lalu tulis nama file/URL-nya di
-  // bawah. Kosongkan (isi dengan '') kalau belum punya asetnya — sementara
-  // akan dipakai gambar panah putih polos sebagai placeholder.
-  // Catatan arah: gambar dianggap MENGHADAP KE KANAN secara default, lalu
-  // otomatis diputar mengikuti arah bidik/lemparan.
-  // =====================================================================
-  window.WEAPON_VISUAL_CONFIG = {
-    // Ikon yang muncul di tangan/dekat pemain saat menahan tombol Tembak.
-    // Bisa diisi gambar pistol, pedang, tongkat sihir, atau apapun.
-    aimIndicatorImage: '',
-    // Gambar peluru/proyektil yang melesat dari pemain ke target.
-    bulletImage: ''
-  };
-
-  // =====================================================================
-  // ====== NPC TARGET LATIHAN TEMBAK (buat tes tembak, mati kalau kena 4x) ======
-  // NPC ini BUKAN pemain sungguhan, cuma boneka target yang bisa ditembak buat
-  // nyoba sistem tembak. Kena tembak 4x -> "mati" (jatuh + hilang sebentar),
-  // lalu otomatis hidup lagi (respawn) setelah beberapa detik.
-  // Posisi & gambar bebas kamu atur di sini lewat code.
-  // =====================================================================
-  window.SHOOT_TEST_NPC_CONFIG = {
-    enabled: true,        // false kalau mau matiin NPC latihan ini
-    x: null,               // posisi X di dunia peta. null = otomatis dekat titik spawn pemain.
-    y: null,               // posisi Y di dunia peta. null = otomatis dekat titik spawn pemain.
-    name: 'Target Latihan',
-    image: 'boneka.png',              // nama file/URL PNG boneka target (kosong = pakai gambar boneka bawaan)
-    hitsToKill: 5,          // berapa kali kena tembak sampai "mati"
-    respawnSeconds: 4       // jeda sebelum hidup lagi setelah mati
-  };
 </script>
 
 <!-- ====== PWA / Play Store readiness ====== -->
@@ -608,61 +571,55 @@
   }
   #jumpBtn:active { filter:brightness(1.2); transform:scale(0.96); }
 
-  /* Tombol skill dirapikan jadi grid 2x2 yang ringkas di atas tombol Lompat,
-     supaya tidak melebar jauh ke kiri layar seperti sebelumnya (satu baris 4 tombol). */
-  .skillBtn {
-    position: fixed; z-index: 20;
-    width: 48px; height: 48px;
-    background: linear-gradient(145deg, rgba(255,255,255,0.26), rgba(255,255,255,0.06));
+  /* ---------- Tombol Senter (cuma tampil di mode Horor, di atas tombol Lompat) ---------- */
+  #flashlightBtn {
+    position: fixed; bottom: 116px; right: 34px;
+    width: 56px; height: 56px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.24), rgba(255,255,255,0.06));
     border: 2px solid rgba(255,255,255,0.28);
     border-radius: 50%;
-    touch-action: none;
-    display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(3px);
-    color: #fff; font-size: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 2px 6px rgba(255,255,255,0.15);
-    transition: transform 0.1s, background 0.2s;
-  }
-  .skillBtn:active { transform: scale(0.9); filter:brightness(1.2); }
-  /* Baris bawah (dekat tombol Lompat): skill utama */
-  #skill1Btn { right: 112px; bottom: 26px; }
-  #skill2Btn { right: 168px; bottom: 26px; }
-
-  /* Ring 360° Drag-to-Aim untuk tombol Tembak: muncul saat ditahan+digeser */
-  #aimRing {
-    position: fixed; right: 144px; bottom: 2px; width: 96px; height: 96px;
-    border-radius: 50%; z-index: 19;
-    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.10), rgba(255,255,255,0.02));
-    border: 2px dashed rgba(255,255,255,0.35);
+    z-index: 20;
     display: none; align-items: center; justify-content: center;
-    pointer-events: none;
+    backdrop-filter: blur(3px);
+    font-size: 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35), inset 0 2px 6px rgba(255,255,255,0.15);
+    transition: filter 0.15s, transform 0.1s, box-shadow 0.2s, border-color 0.2s;
   }
-  #aimRing.active { display: flex; }
-  #aimDot {
-    position: absolute; width: 16px; height: 16px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #ffffff, #9c9c9c);
-    border: 2px solid rgba(255,255,255,0.75);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    will-change: transform;
+  #flashlightBtn.visible { display: flex; }
+  #flashlightBtn:active { filter:brightness(1.2); transform:scale(0.94); }
+  #flashlightBtn.flashlight-off {
+    border-color: rgba(227,79,79,0.55);
+    box-shadow: 0 0 12px rgba(227,79,79,0.4), inset 0 2px 6px rgba(255,255,255,0.1);
+    filter: grayscale(0.5) brightness(0.8);
   }
-  /* Baris atas: aksi sosial (lari/dash) */
-  #emoteBtn { right: 112px; bottom: 82px; }
-  #emoteBtn:active { animation: none; }
-  #emoteBtn.noStamina { filter: grayscale(0.6) brightness(0.75); }
 
-  /* Ring stamina dash, melingkar di sekeliling tombol Lari */
-  #staminaRing {
-    position: fixed; right: 107px; bottom: 77px; width: 58px; height: 58px;
-    z-index: 19; pointer-events: none;
+  /* ---------- Tombol Interaksi (cuma tampil di mode Horor, di sebelah kiri tombol Senter) ---------- */
+  #interactBtn {
+    position: fixed; bottom: 116px; right: 100px;
+    width: 56px; height: 56px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.24), rgba(255,255,255,0.06));
+    border: 2px solid rgba(255,255,255,0.28);
+    border-radius: 50%;
+    z-index: 20;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
+    font-size: 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35), inset 0 2px 6px rgba(255,255,255,0.15);
+    transition: filter 0.15s, transform 0.1s;
   }
-  #staminaRing svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
-  .staminaRingBg { fill: none; stroke: rgba(255,255,255,0.18); stroke-width: 4; }
-  #staminaRingFill {
-    fill: none; stroke: #d6d6d6; stroke-width: 4; stroke-linecap: round;
-    stroke-dasharray: 163.36; stroke-dashoffset: 0;
-    transition: stroke-dashoffset 0.12s linear, stroke 0.2s ease;
+  #interactBtn.visible { display: flex; }
+  #interactBtn:active { filter:brightness(1.2); transform:scale(0.94); }
+
+  /* ---------- Prompt teks "Tekan untuk ..." saat pemain dekat objek interaktif ---------- */
+  #horrorInteractPrompt {
+    position: fixed; left: 50%; bottom: 190px; transform: translateX(-50%);
+    padding: 8px 16px; border-radius: 20px;
+    background: rgba(10,10,10,0.72); border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    z-index: 20; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s;
   }
-  #staminaRingFill.low { stroke: #6a6a6a; }
+  #horrorInteractPrompt.visible { opacity: 1; }
 
   /* ---------- Ikon PNG kustom (ganti file PNG-nya sendiri di assets/icons/) ---------- */
   .icon-img { width:18px; height:18px; object-fit:contain; vertical-align:-3px; }
@@ -691,6 +648,9 @@
     display: none; align-items: center; justify-content: center; padding: 16px;
   }
   .panel-backdrop.visible { display: flex; }
+  /* Panel "Pilih Map" ditempatkan di pojok kiri atas, bukan di tengah layar */
+  #mapBackdrop { align-items: flex-start; justify-content: flex-start; }
+  #mapBackdrop .panel-box { margin: 0; }
   .panel-box {
     width: 100%; max-width: 380px; max-height: 82vh; overflow-y: auto;
     background: rgba(24,24,24,0.97); border: 1px solid rgba(211,211,211,0.3);
@@ -924,25 +884,6 @@
   }
   #mpStatus.online .dot { background:#989898; box-shadow:0 0 4px rgba(152,152,152,0.8); }
 
-  /* ---------- Bar Darah (HP) pemain: tepat di bawah indikator jumlah pemain online ---------- */
-  #hpBarWrap {
-    position:fixed; top:126px; left:14px; z-index:30;
-    width:104px;
-    background:rgba(0,0,0,0.32); border:1px solid rgba(255,255,255,0.15);
-    border-radius:10px; padding:5px 7px; pointer-events:none;
-  }
-  #hpBarRow { display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
-  #hpBarLabel { font-size:9px; font-weight:700; letter-spacing:0.04em; color:rgba(255,255,255,0.75); }
-  #hpBarValue { font-size:9px; font-weight:600; color:rgba(255,255,255,0.75); }
-  #hpBarTrack { width:100%; height:7px; background:rgba(255,255,255,0.15); border-radius:5px; overflow:hidden; }
-  #hpBarFill {
-    height:100%; width:100%; border-radius:5px;
-    background: linear-gradient(90deg,#e23b3b,#8f1f1f);
-    transition: width 0.25s ease, background 0.25s ease;
-  }
-  #hpBarFill.low { background: linear-gradient(90deg,#ff6a3d,#b33a12); }
-  #hpBarFill.critical { background: linear-gradient(90deg,#ff2d2d,#7a0f0f); }
-
   /* =====================================================================
      ====== TEMA UI TERANG (putih/abu muda, kartu rounded, ikon gelap) ======
      Restyle tampilan lobi & HUD in-game supaya senada dengan referensi
@@ -1022,6 +963,35 @@
     border-radius:13px !important; padding:13px 16px !important; font-size:12.5px !important;
     box-shadow:none !important; backdrop-filter:blur(6px) !important;
   }
+  /* ---- Lobby: tombol Mode (di sebelah kiri tombol Map), pojok kanan-bawah ---- */
+  #lobbySelectedModeBtn.lobby-map-btn {
+    position:absolute; right:244px; bottom:20px; top:auto; left:auto; z-index:3;
+    background:rgba(0,0,0,0.05) !important; border:1px solid rgba(0,0,0,0.14) !important; color:#161616 !important;
+    border-radius:13px !important; padding:13px 16px !important; font-size:12.5px !important;
+    box-shadow:none !important; backdrop-filter:blur(6px) !important;
+  }
+  .mode-emoji { font-size:14px; line-height:1; }
+  /* ---- Panel Pilih Mode: kartu per-mode ---- */
+  .mode-row { display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:10px; background:rgba(255,255,255,0.04); margin-bottom:7px; }
+  .mode-row .mr-icon { font-size:22px; width:32px; text-align:center; }
+  .mode-row .mr-info { flex:1; }
+  .mode-row .mr-name { font-size:13px; font-weight:600; }
+  .mode-row .mr-sub { font-size:10.5px; opacity:0.6; line-height:1.4; margin-top:2px; }
+  .mode-row button {
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); color:#eaeaea;
+    border-radius:8px; padding:7px 12px; font-size:11.5px; font-weight:600; cursor:pointer;
+    font-family:'Poppins', sans-serif; flex-shrink:0;
+  }
+  .mode-row.selected { border:1px solid #d3d3d3; background:rgba(211,211,211,0.1); }
+  /* ---- HUD: badge mode aktif saat main (di bawah minimap) ---- */
+  #hudModeBadge {
+    position:fixed; left:14px; top:70px; z-index:6;
+    background:rgba(0,0,0,0.45); color:#eaeaea; font-size:11px; font-weight:600;
+    padding:6px 10px; border-radius:8px; display:none; align-items:center; gap:6px;
+    backdrop-filter:blur(4px);
+  }
+  #hudModeBadge.visible { display:flex; }
+  #hudModeBadge.is-it { background:rgba(220,60,60,0.75); }
   .lobby-start-btn {
     right:20px; top:auto !important; bottom:20px;
     background:rgba(0,0,0,0.06) !important; color:#161616 !important;
@@ -1108,16 +1078,7 @@
   #mpStatus .dot { background:#c7cad1; }
   #mpStatus.online .dot { background:#3ecf6a !important; box-shadow:none !important; }
 
-  /* ---- In-game HUD: bar darah (HP), kartu putih senada di bawah mpStatus ---- */
-  #hpBarWrap {
-    background:#ffffff !important; border:none !important;
-    box-shadow:0 2px 8px rgba(20,20,30,0.07);
-  }
-  #hpBarLabel { color:#8a8f98 !important; }
-  #hpBarValue { color:#8a8f98 !important; }
-  #hpBarTrack { background:#eceef1 !important; }
-
-  /* ---- In-game HUD: joystick, tombol Lompat & skill jadi minimal & transparan ---- */
+  /* ---- In-game HUD: joystick & tombol Lompat jadi minimal & transparan ---- */
   #joystickBase {
     background: rgba(0,0,0,0.04) !important;
     border: 1.5px solid rgba(20,20,30,0.14) !important;
@@ -1134,13 +1095,7 @@
     color:#161616 !important; text-shadow:none !important;
     box-shadow: none !important;
   }
-  .skillBtn {
-    background: rgba(0,0,0,0.05) !important;
-    border: 1.5px solid rgba(20,20,30,0.14) !important;
-    color:#161616 !important;
-    box-shadow: none !important;
-  }
-  #skill1Btn, #exprWheel { display:none !important; }
+  #exprWheel { display:none !important; }
   #fsHint {
     background:rgba(0,0,0,0.05) !important; color:#161616 !important; border:1px solid rgba(20,20,30,0.14) !important;
     box-shadow:none !important;
@@ -1208,6 +1163,9 @@
       </svg>
       Masuk dengan Google
     </button>
+    <button id="guestLoginBtn" class="google-btn" style="margin-top:8px; background:rgba(255,255,255,0.04);">
+      👤 Main sebagai Tamu
+    </button>
 
     <div style="display:flex; align-items:center; gap:10px; margin:16px 0 12px;">
       <div style="flex:1; height:1px; background:rgba(255,255,255,0.12);"></div>
@@ -1269,6 +1227,7 @@
   </div>
 
   <div class="app-version-tag">Versi 1.0.0</div>
+  <button id="lobbySelectedModeBtn" type="button" class="lobby-map-btn"><span class="mode-emoji">🎮</span> <span>Mode</span><span id="lobbySelectedModeText" style="display:none;"></span></button>
   <button id="lobbySelectedMapBtn" type="button" class="lobby-map-btn"><img src="assets/icons/map.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"> <span>Map</span><span id="lobbySelectedMapText" style="display:none;">Meme City</span></button>
   <button id="lobbyPlayBtn" class="lobby-start-btn"><span class="lobby-start-arrow">▶</span> Main</button>
 </div>
@@ -1287,6 +1246,9 @@
     <div id="joystickStick"></div>
   </div>
   <div id="jumpBtn">LOMPAT</div>
+  <button id="flashlightBtn" title="Nyala/matikan senter (F)">🔦</button>
+  <button id="interactBtn" title="Interaksi (E): buka/tutup pintu, periksa lemari, nyalakan lampu, ambil kunci, baca catatan">✋</button>
+  <div id="horrorInteractPrompt"></div>
 
   <!-- 5 Tombol Ekspresi (foto + suara), kecil-kecil, tepat di atas tombol Lompat -->
   <div id="exprWheel">
@@ -1297,28 +1259,9 @@
     <button class="exprSelBtn" data-expr="ketawa" title="Ketawa"><img src="assets/icons/expr_ketawa.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
   </div>
 
-  <button id="skill1Btn" class="skillBtn" title="Skill 1: Bakar (Admin: Kick)" style="display:none;"><img src="assets/icons/skill_fire.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
-  <button id="skill2Btn" class="skillBtn" title="Tembak (tahan &amp; geser buat aim 360°)"><img src="assets/icons/skill_shoot.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
-  <div id="aimRing"><div id="aimDot"></div></div>
-  <div id="staminaRing">
-    <svg viewBox="0 0 58 58">
-      <circle class="staminaRingBg" cx="29" cy="29" r="26"></circle>
-      <circle id="staminaRingFill" cx="29" cy="29" r="26"></circle>
-    </svg>
-  </div>
-  <button id="emoteBtn" class="skillBtn" title="Lari (Dash)"><img src="assets/icons/skill_run.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
-
   <button id="fsHint" title="Layar penuh"><img src="assets/icons/fullscreen.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
   <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">…</span></div>
-
-  <!-- Bar Darah (HP) pemain, di bawah minimap & indikator jumlah pemain -->
-  <div id="hpBarWrap">
-    <div id="hpBarRow">
-      <span id="hpBarLabel">HP</span>
-      <span id="hpBarValue">100/100</span>
-    </div>
-    <div id="hpBarTrack"><div id="hpBarFill"></div></div>
-  </div>
+  <div id="hudModeBadge"><span id="hudModeBadgeText"></span></div>
 
   <div id="hudPlayerCard">
     <div id="hudPlayerAvatar">
@@ -1451,6 +1394,15 @@
     </div>
     <div class="party-or-sep">— atau pilih map di bawah —</div>
     <div id="mapList"></div>
+  </div>
+</div>
+
+<!-- Mode Selection Panel -->
+<div id="modeBackdrop" class="panel-backdrop">
+  <div class="panel-box">
+    <h3><span class="mode-emoji">🎮</span> Pilih Mode <button id="closeModeBtn">✕</button></h3>
+    <div class="panel-sub">Pilih mode permainan buat sesi rame-rame ini. Semua pemain di map yang sama sebaiknya pilih mode yang sama.</div>
+    <div id="modeList"></div>
   </div>
 </div>
 
@@ -1676,7 +1628,10 @@ const firebaseConfig = {
   appId: "1:176814092100:web:1c6e9d71d75e2c2711f111"
 };
 
-let mpEnabled = true;
+// [SEMENTARA OFF] Login/multiplayer dimatikan dulu biar bisa langsung main di
+// browser tanpa login. Nanti kalau mau login/multiplayer aktif lagi, tinggal
+// balikin ini jadi: let mpEnabled = true;
+let mpEnabled = false;
 let db = null;
 let firestore = null;
 let storage = null;
@@ -1685,8 +1640,6 @@ let myPlayerRef = null;
 let authReady = false;
 let isKicked = false;
 let kickedRef = null;
-let effectsRef = null;
-let pushesRef = null;
 let partiesRef = null;
 let partyInvitesRef = null;
 
@@ -1733,8 +1686,6 @@ try {
   storage = firebase.storage();
   playersRef = db.ref('players');
   kickedRef = db.ref('kicked');
-  effectsRef = db.ref('effects');
-  pushesRef = db.ref('pushes');
   partiesRef = db.ref('parties');
   partyInvitesRef = db.ref('partyInvites');
 } catch (err) {
@@ -1954,10 +1905,7 @@ const otherPlayers = {};
 const otherPlayersRender = {};
 // Cache gambar avatar pemain lain (biar tidak decode base64 ulang tiap frame)
 const avatarImgCache = {};
-// Efek skill (api / dorongan) yang sedang tampil di layar, disinkronkan lewat Firebase
 const activeEffects = [];
-// Jejak "afterimage" saat Dash — array {x,y,facing,life,maxLife}, digambar
-// sebelum player supaya kelihatan seperti bayangan yang ditinggalkan.
 const dashTrail = [];
 // Serpihan debu saat berjalan
 const dustParticles = [];
@@ -1966,6 +1914,13 @@ let dustSpawnTimer = 0;
 let gameEntered = false;
 
 let isAdmin = false;
+
+// ---------- State mode Tag ("IT") ----------
+let gameItRef = null; // db.ref('gameIt/<mapId>'), isi: { id, ts }
+let myIsIt = false;
+let tagCooldown = 0; // detik, jeda sebelum bisa nge-tag/ke-tag lagi setelah transfer IT
+const TAG_RADIUS = 34; // jarak (px) buat dianggap "kena tag"
+const TAG_COOLDOWN_SEC = 2;
 
 // ---------- Batas jumlah pemain (buat testing dulu sama sedikit orang) ----------
 // Ganti angka ini sesuka kamu. Isi 0 kalau nanti mau dibuka bebas tanpa batas.
@@ -1995,13 +1950,11 @@ const ICONS = {
   mic: 'mic.png', mute: 'mute.png', unmute: 'unmute.png', chat: 'chat.png', party: 'party.png',
   expr_normal: 'expr_normal.png', expr_marah: 'expr_marah.png', expr_senang: 'expr_senang.png',
   expr_sedih: 'expr_sedih.png', expr_ketawa: 'expr_ketawa.png',
-  skill_fire: 'skill_fire.png', skill_shoot: 'skill_shoot.png', skill_run: 'skill_run.png',
   copy: 'copy.png', share: 'share.png', crown: 'crown.png', upload: 'upload.png', music: 'music.png',
   sunrise: 'sunrise.png', sun: 'sun.png', moon: 'moon.png', pointer: 'pointer.png',
   sticker_laugh: 'sticker_laugh.png', sticker_fire: 'sticker_fire.png', sticker_100: 'sticker_100.png',
   sticker_like: 'sticker_like.png', sticker_love: 'sticker_love.png', sticker_cry: 'sticker_cry.png',
-  fullscreen: 'fullscreen.png',
-  aim_gun: 'aim_gun.png', bullet: 'bullet.png'
+  fullscreen: 'fullscreen.png'
 };
 // Bikin tag <img> untuk sebuah ikon. Kalau file PNG belum ada / belum diganti, ikon otomatis
 // disembunyikan (bukan tampil rusak/kotak patah) supaya UI tetap rapi sebelum kamu isi logonya.
@@ -2018,11 +1971,123 @@ function iconImg(key, cls) {
 // pemain bisa langsung ketik kode itu di panel map buat masuk ke map yang sama
 // dengan temannya, tanpa harus scroll cari nama map satu-satu.
 const MAP_LIST = [
-  { id: 'meme_city', name: 'Meme City', icon: 'map_meme_city', tint: null, codePrefix: 'CITY' }
+  { id: 'meme_city', name: 'Meme City', icon: 'map_meme_city', tint: null, codePrefix: 'CITY' },
+  { id: 'horror_asylum', name: 'Asylum Horor', icon: 'map_horror', tint: null, codePrefix: 'HORR' }
 ];
 let currentMapId = 'meme_city';
 let desiredMapId = 'meme_city';
+// ---------- Mode Horor: map terpisah, gelap gulita, dirakit dari banyak objek ----------
+const HORROR_MAP_ID = 'horror_asylum';
+function isHorrorMapId(mapId) { return mapBaseInfo(mapId || currentMapId).id === HORROR_MAP_ID; }
+function isHorrorMode() { return isHorrorMapId(currentMapId); }
 let lastPlayersSnapshot = {};
+
+// ================= MODE PERMAINAN (Tag, Race, Hide & Seek, Trivia) =================
+const MODE_LIST = [
+  { id: 'tag', icon: '🏃', name: 'Tag / Kejar-kejaran', short: 'Tag', desc: 'Satu orang jadi IT, ngejar pemain lain. Kena tag jadi IT berikutnya.' },
+  { id: 'race', icon: '🏁', name: 'Balap / Race', short: 'Race', desc: 'Lari ke checkpoint di map, siapa cepat sampai finish menang.' },
+  { id: 'hideseek', icon: '🙈', name: 'Hide & Seek', short: 'H&S', desc: 'Satu jadi pencari, lainnya sembunyi di balik objek map.' },
+  { id: 'trivia', icon: '❓', name: 'Trivia / Quiz', short: 'Trivia', desc: 'Mode santai buat ngobrol sambil main kuis, kalah dapet hukuman.' },
+  { id: 'horror', icon: '🔦', name: 'Horror / Asylum Gelap', short: 'Horror', desc: 'Jelajahi gedung tua yang gelap gulita, cuma bermodal senter. Ada sesuatu yang mengintai di kegelapan.' }
+];
+let currentModeId = localStorage.getItem('memeverse_gameMode') || 'tag';
+let desiredModeId = currentModeId;
+function modeInfo(modeId) { return MODE_LIST.find(m => m.id === modeId) || MODE_LIST[0]; }
+function renderModeList() {
+  const list = document.getElementById('modeList');
+  if (!list) return;
+  list.innerHTML = '';
+  MODE_LIST.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'mode-row' + (desiredModeId === m.id ? ' selected' : '');
+    row.innerHTML = `<div class="mr-icon">${m.icon}</div>
+      <div class="mr-info">
+        <div class="mr-name">${m.name}</div>
+        <div class="mr-sub">${m.desc}</div>
+      </div>
+      <button>${desiredModeId === m.id ? 'Terpilih' : 'Pilih'}</button>`;
+    row.querySelector('button').addEventListener('click', () => selectMode(m.id));
+    list.appendChild(row);
+  });
+}
+function selectMode(modeId) {
+  desiredModeId = modeId;
+  currentModeId = modeId;
+  localStorage.setItem('memeverse_gameMode', modeId);
+  const labelEl = document.getElementById('lobbySelectedModeText');
+  if (labelEl) labelEl.textContent = modeInfo(modeId).short;
+  // Mode Horor pakai dunia terpisah (gedung gelap) — pindah otomatis ke map itu,
+  // dan balik ke Meme City lagi kalau ganti ke mode lain.
+  if (modeId === 'horror') {
+    selectMap(HORROR_MAP_ID);
+  } else if (desiredMapId === HORROR_MAP_ID) {
+    selectMap('meme_city');
+  }
+  renderModeList();
+  if (mpEnabled && myPlayerRef) myPlayerRef.update({ gameMode: modeId });
+  updateHudModeBadge();
+  closeModePanel();
+}
+function openModePanel() { renderModeList(); document.getElementById('modeBackdrop').classList.add('visible'); }
+function closeModePanel() { document.getElementById('modeBackdrop').classList.remove('visible'); }
+function updateHudModeBadge() {
+  const badge = document.getElementById('hudModeBadge');
+  const text = document.getElementById('hudModeBadgeText');
+  if (!badge || !text) return;
+  if (!gameEntered) { badge.classList.remove('visible'); return; }
+  const info = modeInfo(currentModeId);
+  text.textContent = info.icon + ' ' + info.name + (currentModeId === 'tag' && myIsIt ? ' • Kamu IT!' : '');
+  badge.classList.toggle('is-it', currentModeId === 'tag' && myIsIt);
+  badge.classList.add('visible');
+}
+
+// ---------- Mode Tag: penentuan & sinkronisasi siapa yang jadi "IT" ----------
+// Disimpan terpisah di db.ref('gameIt/<mapId>') = { id: playerID, ts }, supaya semua
+// klien di map yang sama lihat IT yang SAMA persis tanpa perlu server terpisah.
+function setupTagMode() {
+  if (!mpEnabled || !db) return;
+  if (gameItRef) gameItRef.off();
+  gameItRef = db.ref('gameIt/' + currentMapId);
+  gameItRef.once('value', snap => {
+    const val = snap.val();
+    if (!val || !val.id) {
+      gameItRef.set({ id: playerID, ts: firebase.database.ServerValue.TIMESTAMP });
+    }
+  });
+  gameItRef.on('value', snap => {
+    const val = snap.val();
+    const itId = val && val.id;
+    const wasIt = myIsIt;
+    myIsIt = itId === playerID;
+    if (myPlayerRef) myPlayerRef.update({ isIt: myIsIt });
+    if (myIsIt && !wasIt) showToast('Kamu jadi IT! Kejar pemain lain 🏃');
+    else if (!myIsIt && wasIt) showToast('Kamu bukan IT lagi, buruan lari!');
+    updateHudModeBadge();
+  });
+}
+function teardownTagMode() {
+  if (gameItRef) { gameItRef.off(); gameItRef = null; }
+  myIsIt = false;
+}
+// Dipanggil tiap frame dari update(dt): kalau AKU IT dan cukup dekat dengan pemain
+// lain, transfer status IT ke dia. Hanya sisi yang sedang IT yang menulis, supaya
+// tidak ada dua klien menulis barengan (mengurangi race condition).
+function updateTagMode(dt) {
+  if (currentModeId !== 'tag' || !gameEntered) return;
+  if (tagCooldown > 0) tagCooldown -= dt;
+  if (!myIsIt || !mpEnabled || !gameItRef || tagCooldown > 0) return;
+  for (const id in otherPlayers) {
+    const p = otherPlayers[id];
+    if (!p) continue;
+    const dist = Math.hypot((p.x || 0) - player.x, (p.y || 0) - player.y);
+    if (dist <= TAG_RADIUS) {
+      gameItRef.set({ id: id, ts: firebase.database.ServerValue.TIMESTAMP });
+      tagCooldown = TAG_COOLDOWN_SEC;
+      showToast('Kamu nge-tag ' + (p.name || 'pemain') + '! Dia sekarang IT');
+      break;
+    }
+  }
+}
 function mapBaseInfo(mapId) {
   const baseId = (mapId || 'meme_city').split('_instance_')[0];
   return MAP_LIST.find(m => m.id === baseId) || MAP_LIST[0];
@@ -2128,7 +2193,7 @@ const player = {
   y: WORLD_H/2, 
   w: 30 * PLAYER_SCALE, 
   h: 36 * PLAYER_SCALE, 
-  speed: 220, 
+  speed: 160, 
   dir: 'down', 
   facing: 'right', 
   angle: 0,
@@ -2553,19 +2618,6 @@ function disableMic() {
   }
 }
 
-// Kirim efek skill (api/dorongan) supaya terlihat oleh SEMUA pemain, bukan cuma yang memakainya
-function broadcastEffect(type, x, y, x2, y2) {
-  if (!mpEnabled || !db || !authReady || !effectsRef) return;
-  const payload = {
-    type, x: Math.round(x), y: Math.round(y),
-    ts: firebase.database.ServerValue.TIMESTAMP
-  };
-  if (x2 != null && y2 != null) { payload.x2 = Math.round(x2); payload.y2 = Math.round(y2); }
-  const ref = effectsRef.push(payload);
-  // Bersihkan sendiri setelah dipakai supaya node "effects" tidak menumpuk jadi sampah
-  setTimeout(() => { ref.remove(); }, 1200);
-}
-
 if (mpEnabled && db && playersRef) {
   updateMpIndicator(false, 0);
 
@@ -2583,6 +2635,23 @@ if (mpEnabled && db && playersRef) {
         console.error('Gagal login Google:', err);
         googleLoginBtn.disabled = false;
         if (loginStatusEl) loginStatusEl.textContent = 'Login gagal, coba lagi ya.';
+      });
+    });
+  }
+
+  // ---------- Main sebagai Tamu (tanpa akun Google/email, pakai Firebase Anonymous Auth) ----------
+  // CATATAN: fitur "Anonymous" harus diaktifkan dulu di Firebase Console ->
+  // Authentication -> Sign-in method -> Anonymous, kalau belum, tombol ini akan
+  // gagal dan munculin pesan error di bawah.
+  const guestLoginBtn = document.getElementById('guestLoginBtn');
+  if (guestLoginBtn) {
+    guestLoginBtn.addEventListener('click', () => {
+      guestLoginBtn.disabled = true;
+      if (loginStatusEl) loginStatusEl.textContent = 'Masuk sebagai tamu...';
+      firebase.auth().signInAnonymously().catch(err => {
+        console.error('Gagal masuk sebagai tamu:', err);
+        guestLoginBtn.disabled = false;
+        if (loginStatusEl) loginStatusEl.textContent = 'Gagal masuk sebagai tamu, coba lagi ya.';
       });
     });
   }
@@ -2645,12 +2714,16 @@ if (mpEnabled && db && playersRef) {
     if (!user) return;
     authReady = true;
     setupSignaling();
-    ensurePlayerProfile(user);
 
-    // Simpan identitas asli dari akun Google (nama & foto profil), lalu pindah
-    // dari layar login ke layar lobby.
+    // Simpan identitas pemain: nama & foto dari akun Google/email, atau nama
+    // acak "Tamu####" kalau masuk pakai Anonymous Auth (user.isAnonymous true,
+    // tidak punya displayName maupun email). Ditentukan SEBELUM ensurePlayerProfile
+    // supaya nama tamu ini yang tersimpan di profilnya.
     if (user.displayName) player.name = user.displayName.substring(0, 16);
     else if (user.email) player.name = user.email.split('@')[0].substring(0, 16);
+    else if (user.isAnonymous) player.name = 'Tamu' + Math.floor(1000 + Math.random() * 9000);
+    ensurePlayerProfile(user);
+
     player.photoURL = user.photoURL || null;
     if (player.photoURL) {
       const gImg = new Image();
@@ -2715,20 +2788,6 @@ if (mpEnabled && db && playersRef) {
     // Dengarkan undangan party yang masuk untuk pemain ini
     setupPartyInviteListener();
 
-    // Dengarkan kalau AKU yang didorong pemain lain (skill Gamper) — posisi baru
-    // diterapkan ke player.x/y milikKU sendiri, supaya tidak "balik lagi" saat
-    // aku mengirim update posisiku sendiri berikutnya (poin: dorongan sekarang menetap).
-    if (pushesRef) {
-      pushesRef.child(playerID).on('child_added', snap => {
-        const push = snap.val();
-        snap.ref.remove();
-        if (!push) return;
-        player.x = Math.max(20, Math.min(WORLD_W - 20, push.nx));
-        player.y = Math.max(20, Math.min(WORLD_H - 20, push.ny));
-        player.hitFlashTimer = 0.35;
-      });
-    }
-
     // Pantau status koneksi ke Firebase
     db.ref('.info/connected').on('value', snap => {
       updateMpIndicator(snap.val() === true, Object.keys(otherPlayers).length);
@@ -2760,14 +2819,21 @@ if (mpEnabled && db && playersRef) {
       updateMpIndicator(true, Object.keys(otherPlayers).length);
       if (!gameEntered) refreshLobbyNames(data);
       refreshMapPanelCounts();
-    });
-
-    // Efek skill (api / dorongan) dari siapa pun, dianimasikan di layar semua pemain
-    effectsRef.on('child_added', snap => {
-      const e = snap.val();
-      if (!e) return;
-      const dur = e.type === 'shoot' ? 0.35 : 0.8;
-      activeEffects.push({ type: e.type, x: e.x, y: e.y, x2: e.x2, y2: e.y2, life: dur, maxLife: dur });
+      // Kalau lagi mode Tag & IT saat ini ternyata sudah tidak ada di map ini lagi
+      // (disconnect / pindah map), siapapun yang notice akan coba klaim jadi IT baru.
+      if (gameEntered && currentModeId === 'tag' && gameItRef) {
+        gameItRef.once('value', s => {
+          const val = s.val();
+          const itId = val && val.id;
+          const itStillHere = itId === playerID || (data[itId] && (data[itId].mapId || 'meme_city') === currentMapId);
+          if (!itStillHere) {
+            gameItRef.transaction(cur => {
+              if (cur && cur.id && (cur.id === playerID || (data[cur.id] && (data[cur.id].mapId || 'meme_city') === currentMapId))) return cur;
+              return { id: playerID, ts: firebase.database.ServerValue.TIMESTAMP };
+            });
+          }
+        });
+      }
     });
   });
 
@@ -2826,6 +2892,7 @@ function enterGame(name) {
   gameEntered = true;
   document.getElementById('lobbyOverlay').style.display = 'none';
   ensureFullscreen();
+  updateHudModeBadge();
 
   if (mpEnabled && db && playersRef) {
     myPlayerRef = playersRef.child(playerID);
@@ -2833,6 +2900,8 @@ function enterGame(name) {
       x: player.x, y: player.y, dir: player.dir, facing: player.facing,
       moving: false, name: player.name, expr: player.expr,
       mapId: currentMapId,
+      gameMode: currentModeId,
+      isIt: false,
       photoURL: player.photoURL || null,
       nameColor: player.nameColor || null,
       activeAura: player.activeAura || null,
@@ -2851,6 +2920,8 @@ function enterGame(name) {
     // Kalau koneksi HP putus / tab ditutup, hapus otomatis data pemain ini dari
     // server — termasuk field avatar-nya, jadi tidak ada "sampah" gambar tertinggal.
     myPlayerRef.onDisconnect().remove();
+
+    if (currentModeId === 'tag') setupTagMode();
 
     // Coba sambungkan jalur suara ke semua pemain yang sudah ada di dalam game
     for (const id in otherPlayers) maybeConnectPeer(id);
@@ -2888,11 +2959,13 @@ function backToLobby() {
     myPlayerRef.remove();
     myPlayerRef = null;
   }
+  teardownTagMode();
 
   for (const k in keys) keys[k] = false;
   player.moving = false;
 
   gameEntered = false;
+  updateHudModeBadge();
   const lobbyOverlayEl = document.getElementById('lobbyOverlay');
   lobbyOverlayEl.style.display = '';
   lobbyOverlayEl.classList.add('visible');
@@ -2904,6 +2977,25 @@ function backToLobby() {
 // Fungsi ini menyebar titik munculnya di sekitar tengah map, dan kalau memungkinkan
 // menghindari titik yang sudah ditempati pemain lain yang sedang ada di map yang sama.
 function pickSpawnPoint(mapId) {
+  if (isHorrorMapId(mapId)) {
+    const base = HORROR_SPAWN;
+    const radius = 26, minJarak = 40;
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * radius;
+      const x = base.x + Math.cos(angle) * dist;
+      const y = base.y + Math.sin(angle) * dist;
+      let tooClose = false;
+      for (const id in lastPlayersSnapshot) {
+        const d = lastPlayersSnapshot[id];
+        if (!d || (d.mapId || 'meme_city') !== mapId) continue;
+        const dx = (d.x || 0) - x, dy = (d.y || 0) - y;
+        if (Math.sqrt(dx * dx + dy * dy) < minJarak) { tooClose = true; break; }
+      }
+      if (!tooClose) return { x, y };
+    }
+    return { x: base.x, y: base.y };
+  }
   const cx = WORLD_W / 2, cy = WORLD_H / 2;
   const radius = 160, minJarak = 50;
   for (let attempt = 0; attempt < 12; attempt++) {
@@ -3016,6 +3108,690 @@ const LAKE = { x: WORLD_W * 0.72, y: WORLD_H * 0.26, r: 260 };
   window.MAP_OBJECTS_CONFIG = (window.MAP_OBJECTS_CONFIG || []).concat(generated);
 })();
 
+// =====================================================================================
+// ================= MODE HOROR: peta gedung gelap dirakit dari banyak objek =============
+// Bukan 1 gambar besar — lantai, tembok, pintu/lorong, dan perabotan (meja, kursi,
+// lemari, ranjang, kotak, lampu) semuanya objek TERPISAH lewat MAP_OBJECTS_CONFIG
+// (sama seperti sistem pohon/batu di atas), jadi gampang diubah/diperluas & bisa
+// diganti PNG asli satu-satu kapan saja lewat window.HORROR_TILE_CONFIG di bawah.
+// Layout dibuat dari daftar RUANGAN + LORONG (satuan tile), lalu tembok otomatis
+// "dirakit" di setiap sel kosong yang bersebelahan dengan lantai — sel lantai yang
+// bersinggungan antar ruangan & lorong otomatis jadi celah pintu, tanpa perlu
+// menggambar pintu manual satu-satu.
+// =====================================================================================
+window.HORROR_TILE_CONFIG = window.HORROR_TILE_CONFIG || {
+  wall: '', table: '', chair: '', cabinet: '', bed: '', crate: '', lamp: '', door: '',
+  floor: '', ghost: ''   // <- BARU: tekstur lantai (diulang per-tile) & sprite hantu
+};
+
+// ---------- Tekstur lantai & sprite hantu custom (PNG), opsional ----------
+// Isi `floor` di HORROR_TILE_CONFIG di atas buat ganti lantai kotak warna polos jadi
+// tekstur PNG (diulang tiap ubin 32x32). Isi `ghost` buat ganti siluet hantu vektor
+// bawaan jadi gambar PNG kamu sendiri (disarankan latar transparan, potret/tegak).
+// Sama seperti tembok & perabotan: taruh file di folder yang sama dengan index.html,
+// tulis nama filenya, otomatis dipakai begitu selesai dimuat (sebelum itu tetap
+// pakai tampilan bawaan sebagai placeholder).
+const HORROR_TEXTURES = { floor: null, ghost: null };
+(function loadHorrorTextures() {
+  if (window.HORROR_TILE_CONFIG.floor) {
+    const img = new Image();
+    img.onload = () => { HORROR_TEXTURES.floor = img; };
+    img.src = window.HORROR_TILE_CONFIG.floor;
+  }
+  if (window.HORROR_TILE_CONFIG.ghost) {
+    const img = new Image();
+    img.onload = () => { HORROR_TEXTURES.ghost = img; };
+    img.src = window.HORROR_TILE_CONFIG.ghost;
+  }
+})();
+
+const HORROR_ORIGIN_X = 120, HORROR_ORIGIN_Y = 3100; // titik (0,0) grid horor di dalam WORLD (dijauhkan dari Meme City)
+
+// Ruangan (satuan tile 32px): {id, x, y, w, h} = kolom/baris kiri-atas + lebar/tinggi.
+// Sengaja diberi jarak 1 sel dari tepi grid (x/y mulai dari 1) supaya selalu ada
+// cincin tembok penuh yang mengurung seluruh bangunan.
+const HORROR_ROOMS = [
+  { id: 'hall',    x: 1,  y: 1,  w: 9,  h: 7 },  // Aula masuk — titik spawn pemain
+  { id: 'ward',    x: 14, y: 1,  w: 10, h: 8 },  // Bangsal pasien lama, sempit & panjang
+  { id: 'storage', x: 14, y: 13, w: 9,  h: 8 },  // Gudang gelap — sarang monster
+  { id: 'cellar',  x: 1,  y: 12, w: 8,  h: 8 },  // Ruang bawah tanah, area paling sempit
+  { id: 'office',  x: 25, y: 3,  w: 7,  h: 6 },  // Ruang kerja terpencil
+  // ---- Perluasan gedung (bikin peta jauh lebih luas & butuh dijelajahi) ----
+  { id: 'library', x: 34, y: 1,  w: 8,  h: 7 },  // Perpustakaan tua, timur laut
+  { id: 'chapel',  x: 34, y: 14, w: 9,  h: 9 },  // Kapel terbengkalai, ujung timur
+  { id: 'yard',    x: 1,  y: 22, w: 7,  h: 6 },  // Halaman dalam gelap, ujung barat daya
+  { id: 'morgue',  x: 14, y: 23, w: 9,  h: 6 },  // Kamar mayat, area paling dalam
+  // ---- Perluasan tahap 2 (peta & jangkauan misi dibuat lebih besar lagi) ----
+  { id: 'annex',    x: 45, y: 1,  w: 9,  h: 9 },  // Sayap timur baru, ujung paling timur laut
+  { id: 'garden',   x: 45, y: 13, w: 10, h: 10 }, // Rumah kaca/taman dalam gelap, ujung timur
+  { id: 'catacomb', x: 25, y: 24, w: 10, h: 8 }   // Katakomba di bawah kamar mayat, area terdalam
+];
+// Lorong penghubung antar ruangan (juga satuan tile) — cukup BERSEBELAHAN dengan
+// ruangan (tidak perlu tumpang tindih) untuk otomatis membentuk celah pintu.
+const HORROR_CORRIDORS = [
+  { x: 10, y: 3,  w: 4, h: 3 },  // hall -> ward
+  { x: 17, y: 9,  w: 3, h: 4 },  // ward -> storage
+  { x: 4,  y: 8,  w: 3, h: 4 },  // hall -> cellar (lorong sempit & gelap)
+  { x: 9,  y: 15, w: 5, h: 2 },  // cellar -> storage
+  { x: 23, y: 5,  w: 2, h: 3 },  // ward -> office
+  { x: 32, y: 4,  w: 2, h: 3 },  // office -> library
+  { x: 37, y: 8,  w: 2, h: 6 },  // library -> chapel
+  { x: 17, y: 21, w: 3, h: 2 },  // storage -> morgue
+  { x: 3,  y: 20, w: 3, h: 2 },  // cellar -> yard
+  { x: 8,  y: 25, w: 6, h: 2 },  // yard -> morgue
+  // ---- Lorong tahap 2 ----
+  { x: 41, y: 3,  w: 5, h: 3 },  // library -> annex
+  { x: 48, y: 9,  w: 3, h: 5 },  // annex -> garden
+  { x: 42, y: 17, w: 4, h: 3 },  // chapel -> garden
+  { x: 22, y: 25, w: 4, h: 2 }   // morgue -> catacomb
+];
+
+function horrorTileCenterX(col) { return HORROR_ORIGIN_X + col * TILE + TILE / 2; }
+function horrorTileCenterY(row) { return HORROR_ORIGIN_Y + row * TILE + TILE / 2; }
+function horrorTileBottomY(row) { return HORROR_ORIGIN_Y + row * TILE + TILE; }
+
+function buildHorrorLayout() {
+  const cols = 60, rows = 37;
+  const floor = [];
+  for (let r = 0; r < rows; r++) floor.push(new Array(cols).fill(false));
+  function fillRect(rect) {
+    for (let r = rect.y; r < rect.y + rect.h; r++) {
+      for (let c = rect.x; c < rect.x + rect.w; c++) {
+        if (r >= 0 && r < rows && c >= 0 && c < cols) floor[r][c] = true;
+      }
+    }
+  }
+  HORROR_ROOMS.forEach(fillRect);
+  HORROR_CORRIDORS.forEach(fillRect);
+
+  const objects = [];
+  // Tembok: taruh objek terpisah di tiap sel KOSONG yang bertetangga (termasuk diagonal)
+  // dengan sel lantai — otomatis membentuk keliling ruangan + lorong + celah pintu.
+  // (Diperbaiki: sebelumnya cuma cek 4 arah, jadi ada celah/lubang di sudut-sudut
+  // ruangan yang bertemu diagonal -> tembok terlihat "bolong"/tidak rata. Sekarang
+  // dicek 8 arah supaya semua sudut ikut tertutup tembok dan tingginya dibuat rata
+  // (flush per tile, tanpa overhang acak) biar tampilannya konsisten.)
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (floor[r][c]) continue;
+      let neighborsFloor = false;
+      for (let dr = -1; dr <= 1 && !neighborsFloor; dr++) {
+        for (let dc = -1; dc <= 1 && !neighborsFloor; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && floor[nr][nc]) neighborsFloor = true;
+        }
+      }
+      if (!neighborsFloor) continue;
+      objects.push({
+        image: window.HORROR_TILE_CONFIG.wall || '',
+        x: horrorTileCenterX(c), y: horrorTileBottomY(r),
+        width: TILE, height: TILE, collision: true, collisionInset: 2, anchor: 'bottom',
+        type: 'horrorWall', mapId: HORROR_MAP_ID
+      });
+    }
+  }
+  return { floor, cols, rows, objects };
+}
+const HORROR_LAYOUT = buildHorrorLayout();
+
+// Perabotan: tiap ruangan dikasih beberapa objek berbeda, masing-masing objek TERPISAH
+// (bukan digambar nempel ke lantai) sehingga posisinya bebas diubah satu-satu.
+const HORROR_FURNITURE_PLAN = [
+  { room: 'hall',    items: [ {type:'table',dx:3,dy:2}, {type:'chair',dx:4,dy:2}, {type:'lamp',dx:7,dy:1} ] },
+  { room: 'ward',    items: [ {type:'bed',dx:1,dy:1}, {type:'bed',dx:1,dy:4}, {type:'cabinet',dx:8,dy:1}, {type:'lamp',dx:5,dy:6} ] },
+  { room: 'storage', items: [ {type:'crate',dx:1,dy:1}, {type:'crate',dx:2,dy:1}, {type:'crate',dx:1,dy:5}, {type:'cabinet',dx:7,dy:5} ] },
+  { room: 'cellar',  items: [ {type:'crate',dx:1,dy:1}, {type:'lamp',dx:4,dy:5} ] },
+  { room: 'office',  items: [ {type:'table',dx:2,dy:2}, {type:'chair',dx:3,dy:3}, {type:'cabinet',dx:5,dy:1} ] },
+  { room: 'library', items: [ {type:'cabinet',dx:1,dy:1}, {type:'cabinet',dx:1,dy:4}, {type:'table',dx:5,dy:2}, {type:'lamp',dx:6,dy:5} ] },
+  { room: 'chapel',  items: [ {type:'table',dx:4,dy:1}, {type:'lamp',dx:4,dy:6}, {type:'crate',dx:1,dy:6}, {type:'chair',dx:6,dy:2} ] },
+  { room: 'yard',    items: [ {type:'crate',dx:1,dy:1}, {type:'crate',dx:4,dy:3}, {type:'lamp',dx:4,dy:4} ] },
+  { room: 'morgue',  items: [ {type:'bed',dx:1,dy:1}, {type:'bed',dx:5,dy:1}, {type:'cabinet',dx:1,dy:4}, {type:'lamp',dx:7,dy:4} ] },
+  // ---- Perabotan ruangan tahap 2 ----
+  { room: 'annex',    items: [ {type:'cabinet',dx:1,dy:1}, {type:'table',dx:5,dy:2}, {type:'chair',dx:6,dy:3}, {type:'lamp',dx:4,dy:7} ] },
+  { room: 'garden',   items: [ {type:'crate',dx:1,dy:1}, {type:'crate',dx:2,dy:2}, {type:'lamp',dx:6,dy:5}, {type:'lamp',dx:2,dy:8} ] },
+  { room: 'catacomb', items: [ {type:'crate',dx:1,dy:1}, {type:'cabinet',dx:6,dy:1}, {type:'lamp',dx:4,dy:5} ] }
+];
+const HORROR_FURNITURE_SIZE = {
+  table:   { w: 44, h: 30 },
+  chair:   { w: 20, h: 22 },
+  cabinet: { w: 28, h: 46 },
+  bed:     { w: 54, h: 30 },
+  crate:   { w: 28, h: 28 },
+  lamp:    { w: 14, h: 14 }
+};
+(function addHorrorFurniture() {
+  HORROR_FURNITURE_PLAN.forEach(plan => {
+    const room = HORROR_ROOMS.find(r => r.id === plan.room);
+    if (!room) return;
+    plan.items.forEach(it => {
+      const c = room.x + it.dx, r = room.y + it.dy;
+      const sz = HORROR_FURNITURE_SIZE[it.type] || { w: 28, h: 28 };
+      const isLamp = it.type === 'lamp';
+      HORROR_LAYOUT.objects.push({
+        image: window.HORROR_TILE_CONFIG[it.type] || '',
+        x: horrorTileCenterX(c),
+        y: isLamp ? horrorTileCenterY(r) : horrorTileBottomY(r),
+        width: sz.w, height: sz.h,
+        anchor: isLamp ? 'center' : 'bottom',
+        collision: !isLamp, collisionInset: 4,
+        type: 'horror_' + it.type, mapId: HORROR_MAP_ID
+      });
+    });
+  });
+})();
+
+// =====================================================================================
+// ============================ PINTU ANTAR RUANGAN (buka/tutup) =======================
+// Tiap lorong penghubung dikasih 1 pintu yang menutup TOTAL jalan lorong itu kalau
+// tertutup (pemain MAUPUN hantu sama-sama tidak bisa lewat, karena dipakai lewat
+// sistem collision objek yang sama) — jadi bisa dipakai buat strategi "kabur & tutup
+// pintu di belakang" biar hantu ketahan sebentar. Defaultnya TERTUTUP supaya pemain
+// harus aktif membuka jalan sambil menjelajah, bukan cuma lari lurus ke arah hantu.
+// =====================================================================================
+// Lorong hall -> cellar (index 2 di HORROR_CORRIDORS) dikunci di awal permainan:
+// pintunya cuma bisa dibuka kalau pemain sudah punya 'key_gen' (Kunci Ruang
+// Generator), karena generator buat menyalakan listrik ada di dalam cellar.
+const HORROR_LOCKED_CORRIDOR_INDEX = 2;
+(function addHorrorDoors() {
+  HORROR_CORRIDORS.forEach((c, i) => {
+    // Lorong lebih lebar dari tinggi -> orang lewat MENDATAR, jadi pintunya berupa
+    // sekat TEGAK (1 kolom, penuh tinggi lorong) di tengah supaya benar-benar menutup
+    // seluruh lebar jalan. Sebaliknya kalau lorong lebih tinggi -> pintu jadi sekat
+    // MENDATAR (1 baris, penuh lebar lorong).
+    const horizontalPassage = c.w >= c.h;
+    const rect = horizontalPassage
+      ? { x: c.x + Math.floor(c.w / 2), y: c.y, w: 1, h: c.h }
+      : { x: c.x, y: c.y + Math.floor(c.h / 2), w: c.w, h: 1 };
+    const cx = HORROR_ORIGIN_X + rect.x * TILE + (rect.w * TILE) / 2;
+    const cy = HORROR_ORIGIN_Y + rect.y * TILE + (rect.h * TILE) / 2;
+    HORROR_LAYOUT.objects.push({
+      image: window.HORROR_TILE_CONFIG.door || '',
+      x: cx, y: cy,
+      width: rect.w * TILE, height: rect.h * TILE,
+      anchor: 'center', collision: true, collisionInset: 0,
+      type: 'horror_door', mapId: HORROR_MAP_ID,
+      locked: i === HORROR_LOCKED_CORRIDOR_INDEX,
+      requiresKey: i === HORROR_LOCKED_CORRIDOR_INDEX ? 'key_gen' : null
+    });
+  });
+})();
+
+window.MAP_OBJECTS_CONFIG = (window.MAP_OBJECTS_CONFIG || []).concat(HORROR_LAYOUT.objects);
+
+// Titik spawn pemain (di aula) & titik awal monster (di gudang, jauh dari spawn).
+const HORROR_SPAWN = { x: horrorTileCenterX(5), y: horrorTileCenterY(4) };
+const HORROR_MONSTER_SPAWN = { x: horrorTileCenterX(18), y: horrorTileCenterY(17) };
+
+// =====================================================================================
+// ================= SISTEM MISI: kumpulkan barang yang tersebar di gedung ==============
+// Tersebar di ruangan-ruangan JAUH (termasuk area baru) biar pemain harus jelajahi
+// seluruh peta. Cukup dekati barangnya, otomatis terambil. Semua cuma di sisi klien
+// (belum disinkron antar pemain) — cocok buat misi personal "cari & selamat".
+// =====================================================================================
+const HORROR_MISSION_ITEMS = [
+  { id: 'm1', x: horrorTileCenterX(4),  y: horrorTileCenterY(15), label: 'Catatan Pasien',      collected: false },
+  { id: 'm2', x: horrorTileCenterX(28), y: horrorTileCenterY(6),  label: 'Kunci Berkarat',       collected: false },
+  { id: 'm3', x: horrorTileCenterX(38), y: horrorTileCenterY(4),  label: 'Buku Perpustakaan',    collected: false },
+  { id: 'm4', x: horrorTileCenterX(38), y: horrorTileCenterY(18), label: 'Salib Kapel',          collected: false },
+  { id: 'm5', x: horrorTileCenterX(18), y: horrorTileCenterY(26), label: 'Berkas Kamar Mayat',   collected: false },
+  { id: 'm6', x: horrorTileCenterX(4),  y: horrorTileCenterY(25), label: 'Lentera Tua',          collected: false },
+  // ---- Barang misi tahap 2 (ruangan perluasan) ----
+  { id: 'm7', x: horrorTileCenterX(48), y: horrorTileCenterY(5),  label: 'Peta Tua',             collected: false },
+  { id: 'm8', x: horrorTileCenterX(50), y: horrorTileCenterY(19), label: 'Jurnal Peneliti',      collected: false },
+  { id: 'm9', x: horrorTileCenterX(29), y: horrorTileCenterY(28), label: 'Tengkorak Kuno',       collected: false }
+];
+const HORROR_MISSION_TOTAL = HORROR_MISSION_ITEMS.length;
+let horrorMissionCount = 0, horrorMissionDone = false;
+function resetHorrorMissions() {
+  HORROR_MISSION_ITEMS.forEach(it => it.collected = false);
+  horrorMissionCount = 0;
+  horrorMissionDone = false;
+}
+function updateHorrorMissions() {
+  for (const it of HORROR_MISSION_ITEMS) {
+    if (it.collected) continue;
+    if (Math.hypot(player.x - it.x, player.y - it.y) < 32) {
+      it.collected = true;
+      horrorMissionCount++;
+      showToast('📜 ' + it.label + ' ditemukan (' + horrorMissionCount + '/' + HORROR_MISSION_TOTAL + ')');
+      if (horrorMissionCount >= HORROR_MISSION_TOTAL && !horrorMissionDone) {
+        horrorMissionDone = true;
+        showToast('✅ Semua misi selesai! Hati-hati, dia makin dekat...');
+      }
+    }
+  }
+}
+function drawHorrorMissionItem(sx, sy, it) {
+  const t = performance.now() / 400;
+  const bob = Math.sin(t + it.x) * 3;
+  ctx.save();
+  ctx.translate(sx, sy + bob);
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 16);
+  glow.addColorStop(0, 'rgba(255,215,100,0.55)');
+  glow.addColorStop(1, 'rgba(255,215,100,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffd76a';
+  ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function drawHorrorMissionHUD() {
+  ctx.save();
+  ctx.font = '700 13px Poppins, sans-serif';
+  ctx.fillStyle = '#ffe27a';
+  ctx.textAlign = 'left';
+  ctx.fillText(horrorObjectiveText(), 16, 108);
+  ctx.font = '600 13px Poppins, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillText('📜 Misi: ' + horrorMissionCount + '/' + HORROR_MISSION_TOTAL, 16, 128);
+  const horrorNotesFound = HORROR_NOTES.filter(n => n.found).length;
+  ctx.fillText('📄 Catatan: ' + horrorNotesFound + '/' + HORROR_NOTES.length, 130, 128);
+  ctx.restore();
+  drawHorrorBatteryHUD();
+  drawHorrorFearHUD();
+}
+
+// =====================================================================================
+// ============================ SISTEM BATERAI SENTER ==================================
+// Baterai mulai 100%. Selama senter NYALA, baterai terus berkurang tiap detik.
+// Kalau habis (0%) -> senter otomatis mati (tetap gelap sampai dapat baterai baru
+// atau baterai terisi lagi). Baterai cadangan tersebar di ruangan-ruangan gedung —
+// pemain harus memilih: hemat pemakaian senter (matikan manual saat aman) atau
+// nekat jalan di gelap buat ngejar baterai/misi lebih cepat.
+// =====================================================================================
+let horrorBattery = 100;           // 0..100 (%)
+let horrorFlashlightOn = true;     // status nyala/mati senter (bisa dimatikan manual pemain)
+let horrorBatteryWasEmpty = false; // biar toast "baterai habis" cuma muncul sekali per kejadian
+const HORROR_BATTERY_DRAIN_PER_SEC = 2.4;  // ~42 detik pemakaian terus-menerus buat habis dari 100%
+const HORROR_BATTERY_PICKUP_AMOUNT = 30;   // persen yang didapat tiap ambil 1 baterai cadangan
+
+// Baterai cadangan tersebar di berbagai ruangan (termasuk area jauh), biar pemain
+// harus menjelajah buat tetap punya cahaya. Posisi & jumlah bebas diubah.
+const HORROR_BATTERY_ITEMS = [
+  { id: 'b1', x: horrorTileCenterX(3),  y: horrorTileCenterY(4),  collected: false },  // hall
+  { id: 'b2', x: horrorTileCenterX(20), y: horrorTileCenterY(3),  collected: false },  // ward
+  { id: 'b3', x: horrorTileCenterX(16), y: horrorTileCenterY(17), collected: false },  // storage
+  { id: 'b4', x: horrorTileCenterX(5),  y: horrorTileCenterY(16), collected: false },  // cellar
+  { id: 'b5', x: horrorTileCenterX(27), y: horrorTileCenterY(7),  collected: false },  // office
+  { id: 'b6', x: horrorTileCenterX(36), y: horrorTileCenterY(5),  collected: false },  // library
+  { id: 'b7', x: horrorTileCenterX(40), y: horrorTileCenterY(20), collected: false },  // chapel
+  { id: 'b8', x: horrorTileCenterX(3),  y: horrorTileCenterY(24), collected: false },  // yard
+  { id: 'b9', x: horrorTileCenterX(20), y: horrorTileCenterY(25), collected: false },  // morgue
+  { id: 'b10', x: horrorTileCenterX(52), y: horrorTileCenterY(7),  collected: false }, // annex
+  { id: 'b11', x: horrorTileCenterX(47), y: horrorTileCenterY(18), collected: false }, // garden
+  { id: 'b12', x: horrorTileCenterX(32), y: horrorTileCenterY(29), collected: false }  // catacomb
+];
+function resetHorrorBattery() {
+  horrorBattery = 100;
+  horrorFlashlightOn = true;
+  horrorBatteryWasEmpty = false;
+  HORROR_BATTERY_ITEMS.forEach(b => b.collected = false);
+}
+// Nyala/matikan senter manual (tombol layar / tombol F) — cara pemain "hemat baterai".
+function toggleHorrorFlashlight() {
+  if (!isHorrorMode() || !gameEntered) return;
+  if (!horrorFlashlightOn && horrorBattery <= 0) {
+    showToast('🔋 Baterai senter habis! Cari baterai cadangan dulu.');
+    return;
+  }
+  horrorFlashlightOn = !horrorFlashlightOn;
+  updateFlashlightBtnUI();
+}
+function updateHorrorBattery(dt) {
+  // Senter cuma menguras baterai kalau memang lagi nyala DAN masih ada sisa baterai.
+  if (horrorFlashlightOn && horrorBattery > 0) {
+    horrorBattery = Math.max(0, horrorBattery - HORROR_BATTERY_DRAIN_PER_SEC * dt);
+    if (horrorBattery <= 0 && !horrorBatteryWasEmpty) {
+      horrorBatteryWasEmpty = true;
+      horrorFlashlightOn = false;
+      showToast('🔋 Baterai senter habis! Kamu jalan dalam gelap...');
+      updateFlashlightBtnUI();
+    }
+  }
+  // Ambil baterai cadangan di sekitar
+  for (const b of HORROR_BATTERY_ITEMS) {
+    if (b.collected) continue;
+    if (Math.hypot(player.x - b.x, player.y - b.y) < 32) {
+      b.collected = true;
+      horrorBattery = Math.min(100, horrorBattery + HORROR_BATTERY_PICKUP_AMOUNT);
+      if (horrorBattery > 0) horrorBatteryWasEmpty = false;
+      showToast('🔋 Baterai cadangan didapat! (' + Math.round(horrorBattery) + '%)');
+      updateFlashlightBtnUI();
+    }
+  }
+  updateFlashlightBtnUI();
+}
+function drawHorrorBatteryItem(sx, sy) {
+  const t = performance.now() / 350;
+  const bob = Math.sin(t + sx) * 3;
+  ctx.save();
+  ctx.translate(sx, sy + bob);
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 15);
+  glow.addColorStop(0, 'rgba(120,255,150,0.55)');
+  glow.addColorStop(1, 'rgba(120,255,150,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
+  // Badan baterai kecil
+  ctx.fillStyle = '#e8fff0';
+  ctx.strokeStyle = '#3fae55';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-5, -8, 10, 16, 2) : ctx.rect(-5, -8, 10, 16);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#3fae55';
+  ctx.fillRect(-2.5, -10, 5, 2.5);
+  ctx.restore();
+}
+function drawHorrorBatteryHUD() {
+  const pct = Math.round(horrorBattery);
+  const barW = 90, barH = 9;
+  const bx = 16, by = 138;
+  ctx.save();
+  // Ikon senter: abu kalau mati, terang kalau nyala
+  ctx.font = '13px Poppins, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = horrorFlashlightOn ? 'rgba(255,255,255,0.9)' : 'rgba(255,120,120,0.85)';
+  ctx.fillText(horrorFlashlightOn ? '🔦 ON' : '🔦 OFF', bx, by + 8);
+  // Track bar
+  const trackX = bx + 58;
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(trackX, by - 1, barW, barH, 4); else ctx.rect(trackX, by - 1, barW, barH);
+  ctx.fill();
+  // Isi bar: warna berubah sesuai sisa baterai (hijau -> kuning -> merah)
+  const fillW = Math.max(0, barW * (pct / 100));
+  let barColor = '#5ad46a';
+  if (pct <= 15) barColor = '#e34f4f';
+  else if (pct <= 40) barColor = '#e3c24f';
+  ctx.fillStyle = barColor;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(trackX, by - 1, fillW, barH, 4); else ctx.rect(trackX, by - 1, fillW, barH);
+  ctx.fill();
+  // Persen kecil di ujung
+  ctx.font = '600 10px Poppins, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillText(pct + '%', trackX + barW + 6, by + 8);
+  ctx.restore();
+}
+
+// ---------- HUD Fear/Sanity Meter: label berubah sesuai tingkatan + bar warna
+// dari tenang (kuning pucat) sampai panik (merah menyala). ----------
+function drawHorrorFearHUD() {
+  const pct = Math.round(horrorFear);
+  let label = 'Tenang', color = 'rgba(255,255,255,0.7)';
+  if (pct >= 100) { label = 'PANIK!!'; color = '#ff3b3b'; }
+  else if (pct >= 80) { label = 'Jantung berdebar'; color = '#ff7a6a'; }
+  else if (pct >= 60) { label = 'Gemetar'; color = '#ffb37a'; }
+  else if (pct >= 30) { label = 'Waspada'; color = '#ffe27a'; }
+
+  const bx = 16, by = 160, barW = 120, barH = 8;
+  ctx.save();
+  ctx.font = '600 12px Poppins, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = color;
+  ctx.fillText('❤️ ' + label + ' (' + pct + '%)', bx, by);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(bx, by + 6, barW, barH, 4); else ctx.rect(bx, by + 6, barW, barH);
+  ctx.fill();
+
+  const fillW = Math.max(0, barW * (pct / 100));
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(bx, by + 6, fillW, barH, 4); else ctx.rect(bx, by + 6, fillW, barH);
+  ctx.fill();
+  ctx.restore();
+}
+
+// =====================================================================================
+// ================= SISTEM INTERAKSI LINGKUNGAN =======================================
+// 1 tombol "Interaksi" (✋ tombol layar / tombol E keyboard) dipakai buat semua aksi:
+// buka/tutup pintu, periksa lemari, nyalakan/matikan lampu, ambil kunci, baca catatan.
+// Objek interaktif TERDEKAT dalam radius kecil di sekitar pemain yang dipakai & yang
+// ditampilkan di HUD prompt, biar pemain selalu tahu aksi apa yang bisa dilakukan.
+// =====================================================================================
+const HORROR_INTERACT_RADIUS = 46;
+
+// ---- Nama ruangan (dipakai buat toast "Memasuki ...", biar pemain sadar sedang di mana) ----
+const HORROR_ROOM_NAMES = {
+  hall: 'Aula', ward: 'Bangsal Pasien', storage: 'Gudang', cellar: 'Ruang Bawah Tanah',
+  office: 'Ruang Kerja', library: 'Perpustakaan', chapel: 'Kapel', yard: 'Halaman Dalam',
+  morgue: 'Kamar Mayat', annex: 'Sayap Timur', garden: 'Rumah Kaca', catacomb: 'Katakomba'
+};
+let horrorCurrentRoomId = null;
+function horrorRoomAt(px, py) {
+  const col = Math.floor((px - HORROR_ORIGIN_X) / TILE);
+  const row = Math.floor((py - HORROR_ORIGIN_Y) / TILE);
+  for (const r of HORROR_ROOMS) {
+    if (col >= r.x && col < r.x + r.w && row >= r.y && row < r.y + r.h) return r.id;
+  }
+  return null;
+}
+// Dipanggil tiap frame di mode horor: kalau ruangan berubah (& bukan lagi di lorong
+// kosong tanpa nama), munculkan toast "Memasuki ..." sekali saja per perpindahan.
+function updateHorrorRoomTracking() {
+  const roomId = horrorRoomAt(player.x, player.y);
+  if (roomId !== horrorCurrentRoomId) {
+    horrorCurrentRoomId = roomId;
+    if (roomId) showToast('🚪 Memasuki ' + (HORROR_ROOM_NAMES[roomId] || roomId));
+  }
+}
+
+// ---- Catatan tersebar (dibaca DI TEMPAT lewat tombol interaksi, tidak otomatis) ----
+const HORROR_NOTES = [
+  { id: 'note1', x: horrorTileCenterX(6),  y: horrorTileCenterY(2),  title: 'Catatan Perawat', text: 'Pasien di Bangsal terus mengigau soal "yang di Gudang". Jangan matikan lampu malam hari.', found: false },
+  { id: 'note2', x: horrorTileCenterX(28), y: horrorTileCenterY(8),  title: 'Memo Ruang Kerja', text: 'Kunci cadangan kutaruh di lemari Perpustakaan. Jangan sampai DIA menemukannya duluan.', found: false },
+  { id: 'note3', x: horrorTileCenterX(20), y: horrorTileCenterY(27), title: 'Robekan Jurnal', text: 'Suara langkah di Kamar Mayat bukan langkah manusia. Tutup pintu, jangan menoleh.', found: false },
+  { id: 'note4', x: horrorTileCenterX(47), y: horrorTileCenterY(4),  title: 'Surat Peneliti', text: 'Rumah kaca di sayap timur dulu tempat "percobaan" terakhir dilakukan. Hati-hati di sana.', found: false }
+];
+function resetHorrorNotes() { HORROR_NOTES.forEach(n => n.found = false); }
+
+// ---- Kunci tersebar (diambil MANUAL lewat tombol interaksi, beda dari item misi yang otomatis) ----
+const HORROR_KEYS = [
+  { id: 'key1', x: horrorTileCenterX(36), y: horrorTileCenterY(2),  label: 'Kunci Perpustakaan', collected: false },
+  { id: 'key2', x: horrorTileCenterX(46), y: horrorTileCenterY(15), label: 'Kunci Rumah Kaca', collected: false },
+  // ---- Kunci utama sistem tujuan: buka pintu Ruang Bawah Tanah yang terkunci ----
+  { id: 'key_gen', x: horrorTileCenterX(19), y: horrorTileCenterY(16), label: 'Kunci Ruang Generator', collected: false, isObjectiveKey: true }
+];
+let horrorKeyCount = 0;
+function resetHorrorKeys() { HORROR_KEYS.forEach(k => k.collected = false); horrorKeyCount = 0; }
+
+// =====================================================================================
+// ================= SISTEM TUJUAN (GOAL SYSTEM) ========================================
+// Alur: kumpulkan barang penting -> cari Kunci Ruang Generator -> buka pintu Ruang
+// Bawah Tanah yang terkunci -> nyalakan generator (listrik menyala) -> cari Pintu
+// Keluar & kabur. Hantu jadi lebih agresif begitu listrik menyala.
+// =====================================================================================
+const HORROR_OBJECTIVE_ITEMS = [
+  { id: 'obj1', x: horrorTileCenterX(2),  y: horrorTileCenterY(6),  label: 'Sekring Listrik', collected: false },
+  { id: 'obj2', x: horrorTileCenterX(21), y: horrorTileCenterY(4),  label: 'Kaleng Oli',      collected: false },
+  { id: 'obj3', x: horrorTileCenterX(30), y: horrorTileCenterY(7),  label: 'Kabel Tembaga',   collected: false },
+  { id: 'obj4', x: horrorTileCenterX(36), y: horrorTileCenterY(18), label: 'Engkol Starter',  collected: false }
+];
+const HORROR_OBJECTIVE_TOTAL = HORROR_OBJECTIVE_ITEMS.length;
+const HORROR_GENERATOR = { x: horrorTileCenterX(4), y: horrorTileCenterY(16) };
+const HORROR_EXIT = { x: horrorTileCenterX(1), y: horrorTileCenterY(4) };
+let HORROR_OBJECTIVE_STAGE = 'items'; // items -> findkey -> unlock -> generator -> exit -> won
+let horrorPowerOn = false;
+let horrorGameWon = false;
+let horrorPostPowerAggro = false; // hantu lebih agresif & lebih sering muncul setelah listrik menyala
+
+function resetHorrorObjective() {
+  HORROR_OBJECTIVE_STAGE = 'items';
+  HORROR_OBJECTIVE_ITEMS.forEach(it => it.collected = false);
+  horrorPowerOn = false;
+  horrorGameWon = false;
+  horrorPostPowerAggro = false;
+}
+function horrorObjectiveText() {
+  const n = HORROR_OBJECTIVE_ITEMS.filter(i => i.collected).length;
+  switch (HORROR_OBJECTIVE_STAGE) {
+    case 'items':     return '🎯 Kumpulkan barang penting (' + n + '/' + HORROR_OBJECTIVE_TOTAL + ')';
+    case 'findkey':   return '🎯 Cari Kunci Ruang Generator';
+    case 'unlock':    return '🎯 Buka pintu Ruang Bawah Tanah yang terkunci';
+    case 'generator': return '🎯 Nyalakan generator di Ruang Bawah Tanah';
+    case 'exit':      return '🎯 Cari Pintu Keluar & kabur, dia mulai marah!';
+    case 'won':       return '🏆 Kamu berhasil kabur dari rumah!';
+    default: return '';
+  }
+}
+// Barang penting diambil otomatis begitu didekati, sama seperti item misi biasa.
+function updateHorrorObjectiveItems() {
+  if (HORROR_OBJECTIVE_STAGE !== 'items') return;
+  for (const it of HORROR_OBJECTIVE_ITEMS) {
+    if (it.collected) continue;
+    if (Math.hypot(player.x - it.x, player.y - it.y) < 32) {
+      it.collected = true;
+      const n = HORROR_OBJECTIVE_ITEMS.filter(x => x.collected).length;
+      showToast('🎯 ' + it.label + ' didapat (' + n + '/' + HORROR_OBJECTIVE_TOTAL + ')');
+      if (n >= HORROR_OBJECTIVE_TOTAL) {
+        HORROR_OBJECTIVE_STAGE = 'findkey';
+        showToast('🔑 Semua bahan terkumpul! Sekarang cari Kunci Ruang Generator.');
+      }
+    }
+  }
+}
+function drawHorrorObjectiveItem(sx, sy, it) {
+  const t = performance.now() / 380;
+  const bob = Math.sin(t + it.x) * 3;
+  ctx.save();
+  ctx.translate(sx, sy + bob);
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 16);
+  glow.addColorStop(0, 'rgba(120,200,255,0.55)');
+  glow.addColorStop(1, 'rgba(120,200,255,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#8fd0ff';
+  ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function drawHorrorGeneratorEntity(sx, sy) {
+  ctx.save();
+  ctx.translate(sx, sy);
+  const on = horrorPowerOn;
+  if (on) {
+    const glow = ctx.createRadialGradient(0, -10, 0, 0, -10, 30);
+    glow.addColorStop(0, 'rgba(120,255,150,0.4)');
+    glow.addColorStop(1, 'rgba(120,255,150,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(0, -10, 30, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.fillStyle = on ? '#4a6a4f' : '#3a3a3a';
+  ctx.fillRect(-16, -26, 32, 26);
+  ctx.fillStyle = on ? '#8fffa0' : '#666';
+  ctx.beginPath(); ctx.arc(0, -13, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function drawHorrorExitEntity(sx, sy) {
+  ctx.save();
+  ctx.translate(sx, sy);
+  const ready = horrorPowerOn;
+  const glow = ctx.createRadialGradient(0, -14, 0, 0, -14, 34);
+  glow.addColorStop(0, ready ? 'rgba(120,255,150,0.5)' : 'rgba(255,120,90,0.28)');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, -14, 34, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = ready ? '#3f7a4a' : '#5a3a2a';
+  ctx.fillRect(-14, -34, 28, 34);
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillRect(-10, -30, 20, 26);
+  ctx.restore();
+}
+function drawHorrorWinOverlay() {
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#8fffa0';
+  ctx.font = '700 26px Poppins, sans-serif';
+  ctx.fillText('🏆 KAMU BERHASIL KABUR!', W / 2, H / 2 - 10);
+  ctx.font = '600 13px Poppins, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillText('Tekan "Kembali ke Lobby" untuk main lagi', W / 2, H / 2 + 18);
+  ctx.textAlign = 'left';
+  ctx.restore();
+}
+
+// ---- Teks acak saat "periksa lemari" (cuma flavor, tidak selalu ngasih barang) ----
+const HORROR_CABINET_FLAVORS = [
+  'Cuma tumpukan kain lembab dan bau apek.',
+  'Kertas-kertas tua berserakan, tidak terbaca lagi.',
+  'Ada bekas cakaran di bagian dalam pintu lemari...',
+  'Kosong. Tapi kamu yakin ada yang baru saja bergerak di dalamnya.',
+  'Botol-botol obat kosong berjejer rapi.'
+];
+
+function drawHorrorNoteItem(sx, sy) {
+  const t = performance.now() / 380;
+  const bob = Math.sin(t + sx) * 3;
+  ctx.save();
+  ctx.translate(sx, sy + bob);
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 14);
+  glow.addColorStop(0, 'rgba(220,220,255,0.5)');
+  glow.addColorStop(1, 'rgba(220,220,255,0)');
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#efe9d8';
+  ctx.fillRect(-6, -8, 12, 16);
+  ctx.strokeStyle = 'rgba(100,90,60,0.6)'; ctx.lineWidth = 1;
+  ctx.strokeRect(-6, -8, 12, 16);
+  ctx.beginPath();
+  ctx.moveTo(-4, -4); ctx.lineTo(4, -4);
+  ctx.moveTo(-4, 0);  ctx.lineTo(4, 0);
+  ctx.moveTo(-4, 4);  ctx.lineTo(2, 4);
+  ctx.stroke();
+  ctx.restore();
+}
+function drawHorrorKeyItem(sx, sy) {
+  const t = performance.now() / 350;
+  const bob = Math.sin(t + sx) * 3;
+  ctx.save();
+  ctx.translate(sx, sy + bob);
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 15);
+  glow.addColorStop(0, 'rgba(255,215,100,0.55)');
+  glow.addColorStop(1, 'rgba(255,215,100,0)');
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#d8b45a'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(-3, 0, 4, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(1, 0); ctx.lineTo(8, 0);
+  ctx.moveTo(5, 0); ctx.lineTo(5, 3);
+  ctx.moveTo(8, 0); ctx.lineTo(8, 3);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ---- Objek interaktif TERDEKAT saat ini (dihitung tiap frame lewat updateHorrorInteractScan) ----
+let horrorNearestInteractable = null; // { kind: 'door'|'cabinet'|'lamp'|'note'|'key', ref }
+function horrorInteractPromptText() {
+  if (!horrorNearestInteractable) return '';
+  const ref = horrorNearestInteractable.ref;
+  switch (horrorNearestInteractable.kind) {
+    case 'door':
+      if (ref.locked) return '🔒 Terkunci — butuh Kunci Ruang Generator';
+      return ref.collision ? '🚪 Tekan untuk BUKA pintu' : '🚪 Tekan untuk TUTUP pintu';
+    case 'cabinet': return '🗄️ Tekan untuk periksa lemari';
+    case 'lamp': return ref.horrorOn ? '💡 Tekan untuk matikan lampu' : '💡 Tekan untuk nyalakan lampu';
+    case 'note': return '📄 Tekan untuk baca catatan';
+    case 'key': return ref.isObjectiveKey ? '🔑 Tekan untuk ambil Kunci Ruang Generator' : '🔑 Tekan untuk ambil kunci';
+    case 'generator':
+      if (horrorPowerOn) return '⚡ Generator sudah menyala';
+      return HORROR_OBJECTIVE_STAGE === 'generator' ? '⚡ Tekan untuk nyalakan generator' : '⚙️ Belum bisa dinyalakan sekarang';
+    case 'exit': return horrorPowerOn ? '🚪 Tekan untuk KABUR dari rumah!' : '🚪 Pintu depan gelap & macet, nyalakan listrik dulu';
+    default: return '';
+  }
+}
+function updateHorrorInteractPromptUI() {
+  const el = document.getElementById('horrorInteractPrompt');
+  const btn = document.getElementById('interactBtn');
+  const show = isHorrorMode() && gameEntered && !!horrorNearestInteractable;
+  if (el) {
+    el.classList.toggle('visible', show);
+    if (show) el.textContent = horrorInteractPromptText();
+  }
+  if (btn) btn.classList.toggle('visible', isHorrorMode() && gameEntered);
+}
+
 // ---------- Placeholder tanah & kotak (siap diganti PNG kamu lewat MAP_TILE_CONFIG) ----------
 const PLACEHOLDER_COLORS = {
   grass: '#5fae3f',
@@ -3072,6 +3848,7 @@ const MAP_OBJECTS = (window.MAP_OBJECTS_CONFIG || []).map(cfg => {
     img: null, loaded: false,
     x: cfg.x, y: cfg.y, w, h, anchor,
     type: cfg.type || null,
+    mapId: cfg.mapId || null,
     drawY: footY,
     collision: !!cfg.collision,
     cx: leftX + inset, cy: topY + inset,
@@ -3095,48 +3872,6 @@ function distToRect(px, py, rx, ry, rw, rh) {
 
 // ---------- Desa (dinonaktifkan: tanah polos, tanpa rumah/NPC) ----------
 const NPCS = [];
-
-// ---------- NPC Target Latihan Tembak (window.SHOOT_TEST_NPC_CONFIG di atas) ----------
-// Boneka target statis: bisa ditembak, kena 4x tembak -> "mati" (rebah + hilang),
-// lalu otomatis respawn (hidup lagi, hits balik ke 0) setelah beberapa detik.
-const shootTestNpc = (function initShootTestNpc() {
-  const cfg = window.SHOOT_TEST_NPC_CONFIG || {};
-  if (cfg.enabled === false) return null;
-  const npc = {
-    x: (typeof cfg.x === 'number') ? cfg.x : WORLD_W/2 + 220,
-    y: (typeof cfg.y === 'number') ? cfg.y : WORLD_H/2,
-    name: cfg.name || 'Target Latihan',
-    hitsToKill: cfg.hitsToKill || 4,
-    respawnSeconds: cfg.respawnSeconds || 4,
-    hits: 0,
-    dead: false,
-    respawnTimer: 0,
-    hitFlashTimer: 0,
-    deathAnim: 0, // 0..1, dipakai buat animasi rebah+pudar waktu mati
-    img: null,
-    loaded: false,
-    r: 22 // radius kasar buat collision & deteksi tembak
-  };
-  if (cfg.image) {
-    const img = new Image();
-    img.onload = () => { npc.loaded = true; };
-    img.src = cfg.image;
-    npc.img = img;
-  }
-  return npc;
-})();
-
-// Dipanggil dari useShoot() waktu peluru kena NPC target ini.
-function hitShootTestNpc() {
-  if (!shootTestNpc || shootTestNpc.dead) return;
-  shootTestNpc.hits++;
-  shootTestNpc.hitFlashTimer = 0.28;
-  if (shootTestNpc.hits >= shootTestNpc.hitsToKill) {
-    shootTestNpc.dead = true;
-    shootTestNpc.deathAnim = 0;
-    shootTestNpc.respawnTimer = shootTestNpc.respawnSeconds;
-  }
-}
 
 // ---------- Ikan (dinonaktifkan: tanah polos, tanpa air/ikan) ----------
 const FISH = [];
@@ -3224,6 +3959,12 @@ window.addEventListener('keydown', e => {
     triggerJump();
     e.preventDefault();
   }
+  if (e.key.toLowerCase() === 'f') {
+    toggleHorrorFlashlight();
+  }
+  if (e.key.toLowerCase() === 'e') {
+    handleHorrorInteract();
+  }
   if (['arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase())) e.preventDefault();
 });
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
@@ -3234,6 +3975,29 @@ jumpBtn.addEventListener('touchstart', e => {
   e.preventDefault();
 }, {passive: false});
 jumpBtn.addEventListener('mousedown', triggerJump);
+
+// Tombol Senter (nyala/matikan manual, cara pemain hemat baterai)
+const flashlightBtn = document.getElementById('flashlightBtn');
+flashlightBtn.addEventListener('touchstart', e => {
+  toggleHorrorFlashlight();
+  e.preventDefault();
+}, {passive: false});
+flashlightBtn.addEventListener('mousedown', toggleHorrorFlashlight);
+function updateFlashlightBtnUI() {
+  if (!flashlightBtn) return;
+  flashlightBtn.classList.toggle('visible', isHorrorMode() && gameEntered);
+  const isOn = horrorFlashlightOn && horrorBattery > 0;
+  flashlightBtn.classList.toggle('flashlight-off', !isOn);
+  flashlightBtn.textContent = isOn ? '🔦' : '🔌';
+}
+
+// Tombol Interaksi (buka/tutup pintu, periksa lemari, nyalakan lampu, ambil kunci, baca catatan)
+const interactBtn = document.getElementById('interactBtn');
+interactBtn.addEventListener('touchstart', e => {
+  handleHorrorInteract();
+  e.preventDefault();
+}, {passive: false});
+interactBtn.addEventListener('mousedown', handleHorrorInteract);
 
 // Mic Button logic — sekarang benar-benar minta akses mikrofon & kirim suara ke pemain lain
 const micBtn = document.getElementById('micBtn');
@@ -3279,261 +4043,6 @@ deafenBtn.addEventListener('click', () => {
   applyDeafenState();
   showToast(isDeafened ? 'Suara pemain lain dibisukan' : 'Suara pemain lain dinyalakan lagi');
 });
-
-// Skill 1: Bakar (🔥) - KHUSUS ADMIN: Pemain lain yang didekati akan dikeluarkan (kick) dari game
-const skill1Btn = document.getElementById('skill1Btn');
-function useSkill1() {
-  if (!gameEntered) return;
-  if (!isAdmin) return; // hanya admin yang boleh nge-kick
-  if (mpEnabled && db) {
-    let nearestId = null, nearestDist = 100;
-    for (const id in otherPlayers) {
-      const p = otherPlayers[id];
-      const d = Math.hypot((p.x||0) - player.x, (p.y||0) - player.y);
-      if (d < nearestDist) { nearestDist = d; nearestId = id; }
-    }
-    if (nearestId) {
-      const target = otherPlayers[nearestId];
-      broadcastEffect('fire', target.x || player.x, target.y || player.y);
-      db.ref('kicked/' + nearestId).set(true);
-      db.ref('players/' + nearestId).remove();
-      delete otherPlayers[nearestId];
-      delete avatarImgCache[nearestId];
-    }
-  }
-}
-skill1Btn.addEventListener('touchstart', e => { useSkill1(); e.preventDefault(); }, {passive: false});
-skill1Btn.addEventListener('click', useSkill1);
-
-// Tembak: menembak pemain terdekat ATAU NPC Target Latihan dengan proyektil,
-// lalu mendorong/melukai targetnya. Tetap jalan walau mode offline (biar bisa dites tanpa Firebase),
-// cuma bagian "dorong pemain lain" yang perlu koneksi multiplayer.
-const skill2Btn = document.getElementById('skill2Btn');
-const SHOOT_RANGE = 320;
-const SHOOT_HIT_RADIUS = 46;
-function useShoot() {
-  if (!gameEntered) return;
-
-  // Arah tembak 360° mengikuti aimAngle (hasil drag di tombol Tembak), BUKAN arah gerak/joystick
-  const dirAngle = aimAngle || 0;
-  const aimDx = Math.cos(dirAngle), aimDy = Math.sin(dirAngle);
-
-  // Cari target terdekat DI JALUR TEMBAKAN: bisa pemain lain, ATAU NPC Target Latihan.
-  let hitId = null, hitFwd = SHOOT_RANGE, hitNpc = false;
-  if (mpEnabled && db) {
-    for (const id in otherPlayers) {
-      const p = otherPlayers[id];
-      const px = (p.x||0) - player.x, py = (p.y||0) - player.y;
-      const fwd = px*aimDx + py*aimDy; // seberapa jauh di depan, searah tembakan
-      if (fwd <= 0 || fwd > SHOOT_RANGE) continue;
-      const perp = Math.abs(px*aimDy - py*aimDx); // jarak menyimpang dari garis tembak
-      if (perp <= SHOOT_HIT_RADIUS && fwd < hitFwd) { hitFwd = fwd; hitId = id; hitNpc = false; }
-    }
-  }
-  if (shootTestNpc && !shootTestNpc.dead) {
-    const px = shootTestNpc.x - player.x, py = shootTestNpc.y - player.y;
-    const fwd = px*aimDx + py*aimDy;
-    if (fwd > 0 && fwd <= SHOOT_RANGE) {
-      const perp = Math.abs(px*aimDy - py*aimDx);
-      if (perp <= SHOOT_HIT_RADIUS && fwd < hitFwd) { hitFwd = fwd; hitId = null; hitNpc = true; }
-    }
-  }
-
-  let endX = player.x + aimDx * SHOOT_RANGE;
-  let endY = player.y + aimDy * SHOOT_RANGE;
-
-  if (hitNpc) {
-    endX = shootTestNpc.x;
-    endY = shootTestNpc.y;
-    hitShootTestNpc();
-  } else if (hitId) {
-    const target = otherPlayers[hitId];
-    endX = target.x || player.x;
-    endY = target.y || player.y;
-
-    const pushDist = 90;
-    let nx = (target.x||0) + aimDx * pushDist;
-    let ny = (target.y||0) + aimDy * pushDist;
-    nx = Math.max(20, Math.min(WORLD_W - 20, nx));
-    ny = Math.max(20, Math.min(WORLD_H - 20, ny));
-
-    // Kirim event dorongan ke pemain yang dituju — DIA sendiri yang akan menerapkan
-    // posisi baru ini ke datanya, jadi tidak akan "balik lagi" ke posisi semula.
-    if (pushesRef) pushesRef.child(hitId).push({ nx: Math.round(nx), ny: Math.round(ny) });
-    otherPlayers[hitId] = { ...target, x: nx, y: ny };
-    if (otherPlayersRender[hitId]) { otherPlayersRender[hitId].x = nx; otherPlayersRender[hitId].y = ny; }
-  }
-
-  // Efek peluru buat pemain lain (lewat Firebase, kalau online)...
-  broadcastEffect('shoot', player.x, player.y, endX, endY);
-  // ...DAN langsung juga ditambahkan lokal, supaya tetap kelihatan walau lagi offline
-  // atau round-trip Firebase-nya telat (efek dobel dari server nanti otomatis hilang sendiri, tidak masalah).
-  activeEffects.push({ type: 'shoot', x: player.x, y: player.y, x2: endX, y2: endY, life: 0.35, maxLife: 0.35 });
-}
-
-// --- 360° Drag-to-Aim: tahan tombol Tembak lalu geser jari/mouse ke segala arah
-// untuk membidik, lepas untuk menembak ke arah terakhir yang dibidik.
-// Arah bidik (aimAngle) SENGAJA dipisah dari player.angle (arah gerak/joystick)
-// supaya jalan pakai joystick sama sekali tidak mempengaruhi arah tembakan. ---
-const aim = { active: false, id: null, dragged: false };
-let aimAngle = 0; // arah tembak, hanya diubah lewat drag di tombol Tembak
-const aimRing = document.getElementById('aimRing');
-const aimDot = document.getElementById('aimDot');
-const AIM_MAX_DIST = 42;   // batas radius indikator drag (px)
-const AIM_DEADZONE = 10;   // geser di bawah ini dianggap tap biasa (pakai arah bidik terakhir)
-
-function aimCenter() {
-  const rect = skill2Btn.getBoundingClientRect();
-  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-}
-
-function handleAimStart(clientX, clientY, identifier) {
-  if (!gameEntered) return;
-  aim.active = true;
-  aim.id = identifier;
-  aim.dragged = false;
-  aimRing.classList.add('active');
-  aimDot.style.transform = 'translate(0px, 0px)';
-  updateAim(clientX, clientY);
-}
-
-function handleAimMove(clientX, clientY) {
-  if (!aim.active) return;
-  updateAim(clientX, clientY);
-}
-
-function updateAim(x, y) {
-  const c = aimCenter();
-  const dx = x - c.x, dy = y - c.y;
-  const dist = Math.hypot(dx, dy);
-  if (dist < AIM_DEADZONE) return; // masih dalam deadzone, belum dianggap aim
-  aim.dragged = true;
-  const angle = Math.atan2(dy, dx);
-  aimAngle = angle; // arah tembak — TIDAK menyentuh player.angle, jadi joystick gak bisa ganggu ini
-  player.facing = Math.cos(angle) < 0 ? 'left' : 'right';
-  const clamped = Math.min(dist, AIM_MAX_DIST);
-  aimDot.style.transform = `translate(${Math.cos(angle) * clamped}px, ${Math.sin(angle) * clamped}px)`;
-}
-
-function handleAimEnd() {
-  if (!aim.active) return;
-  aim.active = false;
-  aimRing.classList.remove('active');
-  aimDot.style.transform = 'translate(0px, 0px)';
-  useShoot(); // tembak ke arah hasil drag (atau arah bidik terakhir kalau cuma tap)
-  aim.id = null;
-}
-skill2Btn.addEventListener('touchstart', e => {
-  const t = e.changedTouches[0];
-  handleAimStart(t.clientX, t.clientY, t.identifier);
-  e.preventDefault();
-}, {passive: false});
-
-window.addEventListener('touchmove', e => {
-  if (!aim.active) return;
-  for (let i = 0; i < e.changedTouches.length; i++) {
-    const t = e.changedTouches[i];
-    if (t.identifier === aim.id) handleAimMove(t.clientX, t.clientY);
-  }
-  e.preventDefault();
-}, {passive: false});
-
-window.addEventListener('touchend', e => {
-  if (!aim.active) return;
-  for (let i = 0; i < e.changedTouches.length; i++) {
-    const t = e.changedTouches[i];
-    if (t.identifier === aim.id) handleAimEnd();
-  }
-});
-
-skill2Btn.addEventListener('mousedown', e => {
-  handleAimStart(e.clientX, e.clientY, 'mouse');
-});
-window.addEventListener('mousemove', e => {
-  if (aim.active && aim.id === 'mouse') handleAimMove(e.clientX, e.clientY);
-});
-window.addEventListener('mouseup', () => {
-  if (aim.active && aim.id === 'mouse') handleAimEnd();
-});
-
-// Lari: sekarang jadi Dash — sekali tekan, gerak cepat sesaat ke arah joystick
-// (atau arah tombol panah/WASD, atau arah hadap terakhir kalau diam), pakai stamina.
-const DASH_COST = 34;
-const DASH_SPEED = 950;
-const DASH_DURATION = 0.16;
-// Stamina butuh ~20 detik buat ke-isi lagi 1x pemakaian Dash (34 stamina / 20 detik)
-const STAMINA_REGEN = DASH_COST / 20; // per detik
-
-const staminaRingFill = document.getElementById('staminaRingFill');
-const STAMINA_RING_CIRC = 2 * Math.PI * 26; // keliling lingkaran (r=26)
-function updateStaminaBarUI() {
-  if (!staminaRingFill) return;
-  const pct = Math.max(0, Math.min(100, (player.stamina / player.maxStamina) * 100));
-  staminaRingFill.style.strokeDashoffset = STAMINA_RING_CIRC * (1 - pct / 100);
-  staminaRingFill.classList.toggle('low', player.stamina < DASH_COST);
-  emoteBtn.classList.toggle('noStamina', player.stamina < DASH_COST);
-}
-
-// ---------- Bar Darah (HP) — di bawah minimap ----------
-// Saat ini nilainya penuh secara default (belum ada sumber damage aktif di
-// overworld). applyPlayerDamage()/healPlayer() disediakan siap pakai buat
-// nyambungin ke fitur combat/duel/perangkap nanti.
-const hpBarFillEl = document.getElementById('hpBarFill');
-const hpBarValueEl = document.getElementById('hpBarValue');
-function updateHpBarUI() {
-  if (!hpBarFillEl) return;
-  const pct = Math.max(0, Math.min(100, (player.hp / player.maxHp) * 100));
-  hpBarFillEl.style.width = pct + '%';
-  hpBarFillEl.classList.toggle('low', pct <= 50 && pct > 20);
-  hpBarFillEl.classList.toggle('critical', pct <= 20);
-  if (hpBarValueEl) hpBarValueEl.textContent = Math.round(Math.max(0, player.hp)) + '/' + player.maxHp;
-}
-function applyPlayerDamage(amount) {
-  player.hp = Math.max(0, player.hp - amount);
-  player.hitFlashTimer = 0.35;
-  updateHpBarUI();
-}
-function healPlayer(amount) {
-  player.hp = Math.min(player.maxHp, player.hp + amount);
-  updateHpBarUI();
-}
-updateHpBarUI();
-
-const emoteBtn = document.getElementById('emoteBtn');
-function useDash() {
-  if (!gameEntered) return;
-  if (player.dashTimer > 0) return; // masih dalam animasi dash sebelumnya
-  if (player.stamina < DASH_COST) { showToast('Stamina belum cukup untuk dash!'); return; }
-
-  // Arah dash: ikuti posisi joystick saat ini kalau sedang dipakai,
-  // kalau tidak pakai tombol panah/WASD, kalau tidak juga pakai arah hadap terakhir.
-  let ddx = 0, ddy = 0;
-  if (joystick.active && (joystick.dx !== 0 || joystick.dy !== 0)) {
-    ddx = joystick.dx; ddy = joystick.dy;
-  } else {
-    if (keys['arrowleft']||keys['a']) ddx -= 1;
-    if (keys['arrowright']||keys['d']) ddx += 1;
-    if (keys['arrowup']||keys['w']) ddy -= 1;
-    if (keys['arrowdown']||keys['s']) ddy += 1;
-  }
-  const mag = Math.hypot(ddx, ddy);
-  if (mag < 0.05) { ddx = Math.cos(player.angle || 0); ddy = Math.sin(player.angle || 0); }
-  else { ddx /= mag; ddy /= mag; }
-
-  player.stamina -= DASH_COST;
-  player.dashTimer = DASH_DURATION;
-  player.dashDx = ddx;
-  player.dashDy = ddy;
-  playDashSound();
-  player.angle = Math.atan2(ddy, ddx);
-  if (ddx < 0) { player.dir = 'left'; player.facing = 'left'; }
-  else if (ddx > 0) { player.dir = 'right'; player.facing = 'right'; }
-  if (ddy < 0 && Math.abs(ddy) >= Math.abs(ddx)) player.dir = 'up';
-  else if (ddy > 0 && Math.abs(ddy) >= Math.abs(ddx)) player.dir = 'down';
-  updateStaminaBarUI();
-}
-emoteBtn.addEventListener('touchstart', e => { useDash(); e.preventDefault(); }, {passive: false});
-emoteBtn.addEventListener('click', useDash);
 
 // Chat system wiring (max 50 chars enforced)
 const chatBtn = document.getElementById('chatBtn');
@@ -4006,6 +4515,14 @@ mapJoinCodeInput.addEventListener('input', () => {
   mapJoinCodeInput.value = mapJoinCodeInput.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
 });
 document.getElementById('lobbySelectedMapBtn').addEventListener('click', openMapPanel);
+
+// ---------- Tombol & Panel Pilih Mode ----------
+document.getElementById('closeModeBtn').addEventListener('click', closeModePanel);
+document.getElementById('lobbySelectedModeBtn').addEventListener('click', openModePanel);
+(function initModeLabel() {
+  const labelEl = document.getElementById('lobbySelectedModeText');
+  if (labelEl) labelEl.textContent = modeInfo(currentModeId).short;
+})();
 // ================= END MULTI-MAP + QUEUE SYSTEM =================
 
 // ================= ACHIEVEMENT SYSTEM =================
@@ -4688,11 +5205,8 @@ function collides(nx, ny) {
   // memblokir pemain lewat kotak tabrakan (rectangle) miliknya.
   for (const obj of MAP_OBJECTS) {
     if (!obj.collision) continue;
+    if (obj.mapId && obj.mapId !== currentMapId) continue;
     if (distToRect(nx, ny, obj.cx, obj.cy, obj.cw, obj.ch) < player.w/2 - 4) return true;
-  }
-  // NPC Target Latihan Tembak: cuma menghalangi jalan selagi masih "hidup".
-  if (shootTestNpc && !shootTestNpc.dead) {
-    if (Math.hypot(shootTestNpc.x-nx, shootTestNpc.y-ny) < shootTestNpc.r + player.w/2 - 6) return true;
   }
   if (nx < player.w/2 || nx > WORLD_W-player.w/2 || ny < player.h/2 || ny > WORLD_H-player.h/2) return true;
   // Batasan sungai dihilangkan: sungai cuma dekorasi visual, tidak menghalangi jalan.
@@ -4742,28 +5256,14 @@ function update(dt) {
   if (dy < 0 && Math.abs(dy) >= Math.abs(dx)) player.dir = 'up';
   else if (dy > 0 && Math.abs(dy) >= Math.abs(dx)) player.dir = 'down';
 
-  const curSpeed = player.speed;
-  if (player.dashTimer > 0) {
-    // Sedang dash: abaikan kontrol normal sesaat, gerak cepat ke arah dash
-    player.dashTimer = Math.max(0, player.dashTimer - dt);
-    const ndx = player.x + player.dashDx * DASH_SPEED * dt;
-    const ndy = player.y + player.dashDy * DASH_SPEED * dt;
-    if (!collides(ndx, player.y)) player.x = ndx;
-    if (!collides(player.x, ndy)) player.y = ndy;
-    // Jejak "afterimage" — bayangan tipis di posisi sebelumnya, memudar cepat,
-    // kesan gerak super cepat khas animasi dash.
-    dashTrail.push({ x: player.x, y: player.y, facing: player.facing, life: 0.22, maxLife: 0.22 });
-  } else {
-    const nx = player.x + dx*curSpeed*dt;
-    const ny = player.y + dy*curSpeed*dt;
-    if (!collides(nx, player.y)) player.x = nx;
-    if (!collides(player.x, ny)) player.y = ny;
-    // Stamina cuma pulih lagi kalau tidak lagi dash
-    if (player.stamina < player.maxStamina) {
-      player.stamina = Math.min(player.maxStamina, player.stamina + STAMINA_REGEN * dt);
-      updateStaminaBarUI();
-    }
-  }
+  // Sprint (tahan Shift): lebih cepat tapi jauh lebih berisik buat hantu (lihat
+  // horrorPlayerNoiseRadius) — cuma berlaku selagi benar-benar bergerak.
+  player.sprinting = player.moving && !!keys['shift'];
+  const curSpeed = player.speed * (player.sprinting ? 1.55 : 1);
+  const nx = player.x + dx*curSpeed*dt;
+  const ny = player.y + dy*curSpeed*dt;
+  if (!collides(nx, player.y)) player.x = nx;
+  if (!collides(player.x, ny)) player.y = ny;
 
   // Jump physics
   const gravity = 1200;
@@ -4832,23 +5332,6 @@ function update(dt) {
     }
   }
 
-  // Kedip merah singkat saat kena dorongan (poin: kelihatan kalau kena pukul)
-  if (player.hitFlashTimer > 0) player.hitFlashTimer -= dt;
-
-  // Update NPC Target Latihan Tembak: animasi mati, lalu hitung mundur respawn
-  if (shootTestNpc) {
-    if (shootTestNpc.hitFlashTimer > 0) shootTestNpc.hitFlashTimer -= dt;
-    if (shootTestNpc.dead) {
-      if (shootTestNpc.deathAnim < 1) shootTestNpc.deathAnim = Math.min(1, shootTestNpc.deathAnim + dt * 2.5);
-      shootTestNpc.respawnTimer -= dt;
-      if (shootTestNpc.respawnTimer <= 0) {
-        shootTestNpc.dead = false;
-        shootTestNpc.hits = 0;
-        shootTestNpc.deathAnim = 0;
-      }
-    }
-  }
-
   // Serpihan debu saat berjalan
   if (gameEntered && player.moving && player.z === 0) {
     dustSpawnTimer += dt;
@@ -4890,6 +5373,32 @@ function update(dt) {
   camera.x = Math.max(0, Math.min(WORLD_W - W, player.x - W/2));
   camera.y = Math.max(0, Math.min(WORLD_H - H, player.y - H/2));
 
+  // ===== Mode Horor: langkah kaki, dengungan ambient, AI monster, guncangan kamera =====
+  if (isHorrorMode() && gameEntered) {
+    if (!horrorAmbient) startHorrorAmbient();
+    if (player.moving) {
+      horrorStepTimer += dt;
+      if (horrorStepTimer > 0.38) { horrorStepTimer = 0; playHorrorFootstep(); }
+    } else {
+      horrorStepTimer = 0.2;
+    }
+    updateHorrorMonster(dt);
+    updateHorrorMissions();
+    updateHorrorObjectiveItems();
+    updateHorrorBattery(dt);
+    updateHorrorFear(dt);
+    updateHorrorRoomTracking();
+    updateHorrorInteractScan();
+  } else if (horrorAmbient) {
+    stopHorrorAmbient();
+    updateFlashlightBtnUI();
+    horrorNearestInteractable = null;
+    updateHorrorInteractPromptUI();
+  }
+  if (screenShake.time > 0) screenShake.time = Math.max(0, screenShake.time - dt);
+  if (horrorFlashTimer > 0) horrorFlashTimer = Math.max(0, horrorFlashTimer - dt);
+
+  updateTagMode(dt);
   sendMyPositionIfDue(dt);
 }
 
@@ -4897,8 +5406,10 @@ function drawGround() {
   ctx.save();
   ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
 
-  // ---------- Tanah: putih polos, ATAU PNG upload sendiri (1 foto penuh / ubin diulang) ----------
-  if (groundMode === 'single' && groundSingleImage && groundSingleImage.complete && groundSingleImage.naturalWidth) {
+  // ---------- Tanah: lantai gelap Asylum Horor, ATAU putih polos/PNG upload sendiri ----------
+  if (isHorrorMode()) {
+    drawHorrorFloor();
+  } else if (groundMode === 'single' && groundSingleImage && groundSingleImage.complete && groundSingleImage.naturalWidth) {
     // Mode "1 Foto Penuh": gambar dianggap menutupi SELURUH peta (WORLD_W x WORLD_H),
     // jadi kita ambil potongan (source rect) sesuai posisi kamera, lalu digambar penuh 1 layar.
     const img = groundSingleImage;
@@ -4918,8 +5429,20 @@ function drawGround() {
       ctx.fillRect(-TILE, -TILE, W + TILE*2, H + TILE*2);
       ctx.restore();
     } else {
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, W, H);
+      // Tanah default: kotak-kotak kecil (grid) selang-seling, biar tidak polos kosong.
+      const gx = TILE, gy = TILE;
+      const startCol = Math.floor(camera.x / gx) - 1;
+      const startRow = Math.floor(camera.y / gy) - 1;
+      const colsNeeded = Math.ceil(W / gx) + 3;
+      const rowsNeeded = Math.ceil(H / gy) + 3;
+      for (let r = 0; r < rowsNeeded; r++) {
+        for (let c = 0; c < colsNeeded; c++) {
+          const col = startCol + c, row = startRow + r;
+          const wx = col * gx - camera.x, wy = row * gy - camera.y;
+          ctx.fillStyle = ((col + row) % 2 === 0) ? '#ffffff' : '#f0f0f0';
+          ctx.fillRect(wx, wy, gx, gy);
+        }
+      }
     }
   }
 
@@ -5021,17 +5544,34 @@ function drawGround() {
   // Object layer: cuma proses yang kelihatan di layar biar tetap ringan.
   const visibleMapObjects = [];
   for (const obj of MAP_OBJECTS) {
+    if (obj.mapId && obj.mapId !== currentMapId) continue; // objek horor cuma tampil di map horor, dst.
     const sx = obj.x - camera.x, sy = obj.drawY - camera.y;
     if (sx<-160||sx>W+160||sy<-160||sy>H+160) continue;
     visibleMapObjects.push({ isMapObject:true, obj, x: obj.x, y: obj.drawY, drawY: obj.drawY });
   }
-  // NPC Target Latihan Tembak (satu boneka statis, selalu diproses kalau ada)
-  const shootTestNpcDrawables = (shootTestNpc && (window.SHOOT_TEST_NPC_CONFIG?.enabled !== false))
-    ? [{ isShootTestNpc:true, x: shootTestNpc.x, y: shootTestNpc.y, drawY: shootTestNpc.y }]
-    : [];
   const drawables = visibleObstacles.map(o=>({ type:o.type, x:o.x, y:o.y, scale:o.scale, roof:o.roof, drawY:o.y })).concat([
     { isPlayer:true, x: player.x, y: player.y, drawY: player.y }
-  ]).concat(otherDrawables).concat(npcDrawables).concat(visibleMapObjects).concat(shootTestNpcDrawables);
+  ]).concat(otherDrawables).concat(npcDrawables).concat(visibleMapObjects);
+  if (isHorrorMode()) {
+    drawables.push({ isHorrorMonster:true, x: HORROR_MONSTER.x, y: HORROR_MONSTER.y, drawY: HORROR_MONSTER.y });
+    for (const it of HORROR_MISSION_ITEMS) {
+      if (!it.collected) drawables.push({ isHorrorMissionItem:true, x: it.x, y: it.y, drawY: it.y, item: it });
+    }
+    for (const b of HORROR_BATTERY_ITEMS) {
+      if (!b.collected) drawables.push({ isHorrorBatteryItem:true, x: b.x, y: b.y, drawY: b.y });
+    }
+    for (const n of HORROR_NOTES) {
+      if (!n.found) drawables.push({ isHorrorNote:true, x: n.x, y: n.y, drawY: n.y });
+    }
+    for (const k of HORROR_KEYS) {
+      if (!k.collected) drawables.push({ isHorrorKey:true, x: k.x, y: k.y, drawY: k.y });
+    }
+    for (const it of HORROR_OBJECTIVE_ITEMS) {
+      if (!it.collected) drawables.push({ isHorrorObjectiveItem:true, x: it.x, y: it.y, drawY: it.y, item: it });
+    }
+    drawables.push({ isHorrorGenerator:true, x: HORROR_GENERATOR.x, y: HORROR_GENERATOR.y, drawY: HORROR_GENERATOR.y });
+    drawables.push({ isHorrorExit:true, x: HORROR_EXIT.x, y: HORROR_EXIT.y, drawY: HORROR_EXIT.y });
+  }
   drawables.sort((a,b)=>a.drawY-b.drawY);
 
   drawDashTrail();
@@ -5043,62 +5583,18 @@ function drawGround() {
     else if (d.isOther) drawOtherPlayer(sx, sy, d.id, d.data, d.z || 0);
     else if (d.isNpc) drawNpc(sx, sy, d.name, d.color, d.phase);
     else if (d.isMapObject) drawMapObject(sx, sy, d.obj);
-    else if (d.isShootTestNpc) drawShootTestNpc(sx, sy, shootTestNpc);
+    else if (d.isHorrorMonster) drawHorrorMonsterEntity(sx, sy);
+    else if (d.isHorrorMissionItem) drawHorrorMissionItem(sx, sy, d.item);
+    else if (d.isHorrorBatteryItem) drawHorrorBatteryItem(sx, sy);
+    else if (d.isHorrorNote) drawHorrorNoteItem(sx, sy);
+    else if (d.isHorrorKey) drawHorrorKeyItem(sx, sy);
+    else if (d.isHorrorObjectiveItem) drawHorrorObjectiveItem(sx, sy, d.item);
+    else if (d.isHorrorGenerator) drawHorrorGeneratorEntity(sx, sy);
+    else if (d.isHorrorExit) drawHorrorExitEntity(sx, sy);
     else if (d.type==='tree') drawTree(sx, sy, d.scale);
     else if (d.type==='rock') drawRock(sx, sy, d.scale);
     else if (d.type==='house') drawHouse(sx, sy, d.scale, d.roof);
     else drawBush(sx, sy, d.scale);
-  }
-
-  // Efek skill (api / dorongan) di atas semua entitas
-  for (const ef of activeEffects) {
-    const sx = ef.x - camera.x, sy = ef.y - camera.y;
-    const alpha = Math.max(0, ef.life / (ef.maxLife || 0.8));
-    if (ef.type === 'fire') {
-      ctx.fillStyle = `rgba(255, 100, 30, ${alpha})`;
-      ctx.beginPath(); ctx.arc(sx, sy - 10, 16 * (0.7 + alpha*0.3), 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = `rgba(255, 200, 60, ${alpha*0.85})`;
-      ctx.beginPath(); ctx.arc(sx, sy - 16, 9, 0, Math.PI*2); ctx.fill();
-    } else if (ef.type === 'push') {
-      ctx.strokeStyle = `rgba(120, 200, 255, ${alpha})`;
-      ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.arc(sx, sy, 26 * (1 - alpha) + 6, 0, Math.PI*2); ctx.stroke();
-    } else if (ef.type === 'shoot') {
-      const endX = ef.x2 != null ? ef.x2 : ef.x, endY = ef.y2 != null ? ef.y2 : ef.y;
-      const progress = Math.min(1, 1 - Math.max(0, ef.life) / (ef.maxLife || 0.35));
-      const bx = ef.x + (endX - ef.x) * progress, by = ef.y + (endY - ef.y) * progress;
-      const bsx = bx - camera.x, bsy = by - camera.y;
-      const travelAngle = Math.atan2(endY - ef.y, endX - ef.x);
-      const bulletImg = canvasIcons.bullet;
-      const hasBulletImg = bulletImg && bulletImg.complete && bulletImg.naturalWidth > 0;
-
-      // Jejak peluru di belakangnya
-      ctx.strokeStyle = `rgba(255, 225, 80, ${alpha * 0.6})`;
-      ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(bsx, bsy); ctx.stroke();
-
-      // Peluru itu sendiri — pakai PNG (assets/icons/bullet.png) kalau ada, kalau tidak fallback bulatan kuning
-      if (hasBulletImg) {
-        const bw = 22, bh = 22 * (bulletImg.naturalHeight / bulletImg.naturalWidth);
-        ctx.save();
-        ctx.globalAlpha = Math.max(alpha, 0.6);
-        ctx.translate(bsx, bsy);
-        ctx.rotate(travelAngle); // PNG dianggap menghadap ke KANAN, diputar sesuai arah tembak
-        ctx.drawImage(bulletImg, -bw / 2, -bh / 2, bw, bh);
-        ctx.restore();
-      } else {
-        ctx.fillStyle = `rgba(255, 240, 140, ${Math.max(alpha, 0.6)})`;
-        ctx.beginPath(); ctx.arc(bsx, bsy, 6, 0, Math.PI*2); ctx.fill();
-      }
-
-      // Percikan kena target saat peluru sampai
-      if (progress >= 0.92) {
-        const tx = endX - camera.x, ty = endY - camera.y;
-        ctx.strokeStyle = `rgba(255, 200, 60, ${alpha})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(tx, ty, 12 * (1.4 - alpha), 0, Math.PI*2); ctx.stroke();
-      }
-    }
   }
 
   ctx.restore();
@@ -5110,6 +5606,17 @@ function drawMapObject(sx, sy, obj) {
   // sx,sy = posisi titik kaki (anchor) objek di layar. Gambar ditaruh relatif dari situ.
   const drawX = sx - obj.w/2;
   const drawY = obj.anchor === 'center' ? sy - obj.h/2 : sy - obj.h;
+
+  // Pintu & lampu punya STATE (terbuka/tertutup, nyala/mati) yang harus ikut
+  // digambar, jadi ditangani terpisah dari placeholder generik di bawah.
+  if (!(obj.img && obj.loaded) && obj.type === 'horror_door') {
+    drawHorrorDoorShape(drawX, drawY, obj.w, obj.h, obj.collision);
+    return;
+  }
+  if (!(obj.img && obj.loaded) && obj.type === 'horror_lamp') {
+    drawHorrorLampShape(drawX, drawY, obj.w, obj.h, !!obj.horrorOn);
+    return;
+  }
 
   if (obj.img && obj.loaded) {
     ctx.drawImage(obj.img, drawX, drawY, obj.w, obj.h);
@@ -5170,6 +5677,59 @@ function drawPlaceholderShape(type, drawX, drawY, w, h) {
     ctx.fillRect(drawX, drawY, w, h*0.4);
     ctx.strokeStyle = 'rgba(80,60,30,0.6)'; ctx.lineWidth = 1.5;
     ctx.strokeRect(drawX, drawY, w, h*0.4);
+  } else if (type === 'horrorWall') {
+    // Tembok bata/kayu tua gelap — panel atas sedikit lebih gelap biar terasa berdimensi.
+    ctx.fillStyle = '#141210';
+    ctx.fillRect(drawX, drawY, w, h);
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(drawX, drawY, w, h*0.2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 1;
+    ctx.strokeRect(drawX+0.5, drawY+0.5, w-1, h-1);
+    const seed = Math.abs(Math.sin(drawX*0.7 + drawY*1.3));
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(drawX + seed*w*0.7 + w*0.1, drawY + h*0.3, 2, h*0.4);
+  } else if (type === 'horror_table') {
+    ctx.fillStyle = '#241b12';
+    ctx.fillRect(drawX, drawY + h*0.15, w, h*0.35);
+    ctx.fillStyle = '#1a130c';
+    ctx.fillRect(drawX+2, drawY+h*0.5, 3, h*0.5);
+    ctx.fillRect(drawX+w-5, drawY+h*0.5, 3, h*0.5);
+  } else if (type === 'horror_chair') {
+    ctx.fillStyle = '#20160e';
+    ctx.fillRect(drawX+w*0.15, drawY+h*0.3, w*0.7, h*0.4);
+    ctx.fillRect(drawX+w*0.15, drawY, w*0.12, h*0.5);
+  } else if (type === 'horror_cabinet') {
+    ctx.fillStyle = '#191410';
+    ctx.fillRect(drawX, drawY, w, h);
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.beginPath(); ctx.moveTo(drawX+w/2, drawY+2); ctx.lineTo(drawX+w/2, drawY+h-2); ctx.stroke();
+    ctx.fillStyle = 'rgba(90,80,60,0.5)';
+    ctx.beginPath(); ctx.arc(drawX+w*0.42, drawY+h*0.5, 1.6, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(drawX+w*0.58, drawY+h*0.5, 1.6, 0, Math.PI*2); ctx.fill();
+  } else if (type === 'horror_bed') {
+    ctx.fillStyle = '#1c1611';
+    ctx.fillRect(drawX, drawY, w, h);
+    ctx.fillStyle = '#2f2a22';
+    ctx.fillRect(drawX+3, drawY+3, w-6, h-6);
+    ctx.fillStyle = '#3a352c';
+    ctx.fillRect(drawX+4, drawY+4, w*0.28, h-8);
+  } else if (type === 'horror_crate') {
+    ctx.fillStyle = '#231a10';
+    ctx.fillRect(drawX, drawY, w, h);
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1.4;
+    ctx.strokeRect(drawX+1, drawY+1, w-2, h-2);
+    ctx.beginPath(); ctx.moveTo(drawX, drawY); ctx.lineTo(drawX+w, drawY+h);
+    ctx.moveTo(drawX+w, drawY); ctx.lineTo(drawX, drawY+h); ctx.stroke();
+  } else if (type === 'horror_lamp') {
+    const flick = 0.5 + Math.abs(Math.sin(performance.now()/220 + drawX)) * 0.5;
+    const glowR = w * 3.4;
+    const grad = ctx.createRadialGradient(drawX+w/2, drawY+h/2, 0, drawX+w/2, drawY+h/2, glowR);
+    grad.addColorStop(0, `rgba(255,190,90,${(0.22*flick).toFixed(2)})`);
+    grad.addColorStop(1, 'rgba(255,190,90,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(drawX+w/2, drawY+h/2, glowR, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = `rgba(255,210,120,${(0.7*flick).toFixed(2)})`;
+    ctx.beginPath(); ctx.arc(drawX+w/2, drawY+h/2, w*0.4, 0, Math.PI*2); ctx.fill();
   } else {
     // Tidak ada type yang cocok -> kotak putus-putus generik seperti sebelumnya.
     ctx.strokeStyle = 'rgba(120,120,120,0.6)';
@@ -5186,76 +5746,46 @@ function drawPlaceholderShape(type, drawX, drawY, w, h) {
   ctx.restore();
 }
 
-// ---------- NPC Target Latihan Tembak: boneka target, HP bar, kena 4x tembak = "mati" lalu respawn ----------
-function drawShootTestNpc(sx, sy, npc) {
-  const size = 44; // ukuran gambar/placeholder boneka
-  const anim = npc.deathAnim || 0;
-
+// Pintu tertutup (menghalangi) vs terbuka (bisa lewat) — bentuknya menyesuaikan
+// orientasi lorong: kalau lebih tinggi dari lebar berarti sekat tegak (lorong
+// mendatar), kalau lebih lebar dari tinggi berarti sekat mendatar (lorong tegak).
+function drawHorrorDoorShape(drawX, drawY, w, h, closed) {
   ctx.save();
-  // Waktu "mati": rebah (rotasi 90°) + memudar, dipakai buat kasih feedback jelas kena 4x.
-  const rot = npc.dead ? (Math.PI/2) * Math.min(1, anim * 1.6) : 0;
-  const alpha = npc.dead ? Math.max(0, 1 - anim) : 1;
-  ctx.globalAlpha = alpha;
-
-  // Bayangan
-  ctx.fillStyle = 'rgba(0,0,0,0.2)';
-  ctx.beginPath();
-  ctx.ellipse(sx, sy + 4, size*0.32, size*0.13, 0, 0, Math.PI*2);
-  ctx.fill();
-
-  ctx.translate(sx, sy - size/2);
-  ctx.rotate(rot);
-
-  if (npc.img && npc.loaded) {
-    ctx.drawImage(npc.img, -size/2, -size/2, size, size);
+  if (closed) {
+    ctx.fillStyle = '#3a2515';
+    ctx.fillRect(drawX, drawY, w, h);
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 2;
+    ctx.strokeRect(drawX + 1, drawY + 1, w - 2, h - 2);
+    ctx.fillStyle = 'rgba(255,210,120,0.55)';
+    const knobX = w >= h ? drawX + w * 0.15 : drawX + w / 2;
+    const knobY = w >= h ? drawY + h / 2 : drawY + h * 0.15;
+    ctx.beginPath(); ctx.arc(knobX, knobY, 2.2, 0, Math.PI * 2); ctx.fill();
   } else {
-    // Placeholder bawaan: boneka jerami sederhana (lingkaran kepala + badan kotak + silang target).
-    ctx.fillStyle = '#c98a4b';
-    ctx.fillRect(-4, -size/2 + 10, 8, size - 14); // tiang
-    ctx.fillStyle = '#e2c290';
-    ctx.beginPath(); ctx.arc(0, -size/2 + 8, 9, 0, Math.PI*2); ctx.fill(); // kepala jerami
-    ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(-13, -size/2 + 22); ctx.lineTo(13, -size/2 + 22); ctx.stroke(); // lengan
-    // Lingkaran target merah-putih di dada
-    ctx.fillStyle = '#e34b4b';
-    ctx.beginPath(); ctx.arc(0, 2, 10, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(0, 2, 6, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#e34b4b';
-    ctx.beginPath(); ctx.arc(0, 2, 2.5, 0, Math.PI*2); ctx.fill();
-  }
-
-  // Kedip putih singkat waktu baru kena tembak
-  if (npc.hitFlashTimer > 0) {
-    ctx.globalAlpha = alpha * Math.min(1, npc.hitFlashTimer / 0.28);
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.fillRect(-size/2, -size/2, size, size);
+    // Pintu terbuka: cuma sisa bingkai tipis di kedua sisi, bagian tengah kosong bisa dilewati.
+    ctx.strokeStyle = 'rgba(120,90,55,0.5)'; ctx.lineWidth = 2;
+    ctx.strokeRect(drawX + 0.5, drawY + 0.5, w - 1, h - 1);
   }
   ctx.restore();
-
-  if (!npc.dead) {
-    // Nama + HP bar kecil (jumlah tembakan tersisa sebelum "mati")
-    drawNameTag(sx, sy - size - 14, npc.name, { color: '#ffb3b3' });
-    const barW = 40, barH = 5;
-    const remaining = Math.max(0, npc.hitsToKill - npc.hits);
-    const pct = remaining / npc.hitsToKill;
-    const barX = sx - barW/2, barY = sy - size - 6;
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.fillRect(barX, barY, barW, barH);
-    ctx.fillStyle = pct > 0.34 ? '#4caf50' : '#e34b4b';
-    ctx.fillRect(barX, barY, barW * pct, barH);
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1;
-    ctx.strokeRect(barX, barY, barW, barH);
+}
+function drawHorrorLampShape(drawX, drawY, w, h, on) {
+  ctx.save();
+  if (on) {
+    const flick = 0.5 + Math.abs(Math.sin(performance.now()/220 + drawX)) * 0.5;
+    const glowR = w * 3.4;
+    const grad = ctx.createRadialGradient(drawX+w/2, drawY+h/2, 0, drawX+w/2, drawY+h/2, glowR);
+    grad.addColorStop(0, `rgba(255,190,90,${(0.22*flick).toFixed(2)})`);
+    grad.addColorStop(1, 'rgba(255,190,90,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(drawX+w/2, drawY+h/2, glowR, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = `rgba(255,210,120,${(0.7*flick).toFixed(2)})`;
+    ctx.beginPath(); ctx.arc(drawX+w/2, drawY+h/2, w*0.4, 0, Math.PI*2); ctx.fill();
   } else {
-    // Sedang "mati" / nunggu respawn: tampilkan hitung mundur kecil di bekas posisinya.
-    ctx.save();
-    ctx.globalAlpha = 0.7;
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Respawn ' + Math.max(0, Math.ceil(npc.respawnTimer)) + 's', sx, sy - size - 6);
-    ctx.restore();
+    // Lampu mati: kelihatan bentuknya doang, tanpa cahaya sama sekali.
+    ctx.fillStyle = 'rgba(60,55,45,0.9)';
+    ctx.beginPath(); ctx.arc(drawX+w/2, drawY+h/2, w*0.4, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1; ctx.stroke();
   }
+  ctx.restore();
 }
 
 function drawTree(x,y,scale) {
@@ -5404,24 +5934,14 @@ function drawFrameRing(x, renderY, frameType) {
 // Preload ikon canvas (dipakai lewat drawImage, bukan fillText emoji lagi).
 // Kalau file PNG-nya belum diganti/belum ada, badge otomatis tidak digambar (tidak error).
 const canvasIcons = {};
-// Kalau WEAPON_VISUAL_CONFIG.aimIndicatorImage / bulletImage diisi (nama file
-// atau link https://...), itu yang dipakai. Kalau kosong, fallback ke file
-// assets/icons/aim_gun.png / assets/icons/bullet.png seperti biasa.
+// Ambil ikon PNG dari folder assets/icons/ (bisa ditimpa sendiri file-nya).
 function loadCanvasIcon(key) {
-  const weaponCfg = window.WEAPON_VISUAL_CONFIG || {};
-  let src;
-  if (key === 'aim_gun' && weaponCfg.aimIndicatorImage) {
-    src = weaponCfg.aimIndicatorImage;
-  } else if (key === 'bullet' && weaponCfg.bulletImage) {
-    src = weaponCfg.bulletImage;
-  } else {
-    src = ICON_BASE + (ICONS[key] || (key + '.png'));
-  }
+  const src = ICON_BASE + (ICONS[key] || (key + '.png'));
   const img = new Image();
   img.src = src;
   canvasIcons[key] = img;
 }
-['battle_pass', 'aim_gun', 'bullet'].forEach(loadCanvasIcon);
+loadCanvasIcon('battle_pass');
 
 function drawBattlePassBadge(x, tagY, hasBattlePass) {
   if (!hasBattlePass) return;
@@ -5449,6 +5969,29 @@ function drawAuraRing(x, renderY, color) {
   ctx.beginPath();
   ctx.ellipse(x, renderY - 8, 22 * pulse, 28 * pulse, 0, 0, Math.PI * 2);
   ctx.stroke();
+  ctx.restore();
+}
+// Cincin merah berdenyut + label "IT" di atas kepala pemain yang sedang jadi IT (mode Tag)
+function drawTagRing(x, renderY) {
+  ctx.save();
+  const t = performance.now() / 260;
+  const pulse = 1 + Math.sin(t) * 0.1;
+  ctx.globalAlpha = 0.85;
+  ctx.strokeStyle = '#ff3b3b';
+  ctx.lineWidth = 3;
+  ctx.shadowColor = '#ff3b3b';
+  ctx.shadowBlur = 14;
+  ctx.beginPath();
+  ctx.ellipse(x, renderY - 6, 24 * pulse, 30 * pulse, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+  ctx.save();
+  ctx.font = 'bold 11px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ff3b3b';
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 3;
+  ctx.fillText('IT', x, renderY - 40);
   ctx.restore();
 }
 const stickerImgCache = {};
@@ -5486,54 +6029,6 @@ function drawNameTag(x, y, text, opts) {
   ctx.restore();
 }
 
-function drawAimArrow(x, groundY) {
-  const aiming = typeof aim !== 'undefined' && aim.active;
-  if (!aiming) return; // cuma tampil pas lagi nembak (tahan tombol Tembak), gak dipakai buat jalan/joystick
-
-  const angle = aimAngle || 0;
-  const dist = 34; // jarak ikon dari pusat karakter
-  const gunImg = canvasIcons.aim_gun;
-  const hasImg = gunImg && gunImg.complete && gunImg.naturalWidth > 0;
-
-  const px = x + Math.cos(angle) * dist;
-  const py = groundY + Math.sin(angle) * dist * 0.5; // dipipihkan biar nempel di tanah (perspektif atas)
-
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.55)';
-  ctx.shadowBlur = 4;
-
-  if (hasImg) {
-    // Gambar PNG pistol/senjata, tinggal timpa assets/icons/aim_gun.png buat ganti modelnya.
-    // PNG dianggap menghadap ke KANAN secara default lalu diputar mengikuti arah bidik.
-    const size = 32;
-    ctx.translate(px, py);
-    ctx.rotate(angle);
-    ctx.drawImage(gunImg, -size / 2, -size / 2, size, size);
-  } else {
-    // Fallback panah vektor kalau assets/icons/aim_gun.png belum ada / gagal dimuat
-    const innerR = 16, outerR = 52;
-    const cosA = Math.cos(angle), sinA = Math.sin(angle) * 0.5;
-    const sxp = x + cosA * innerR, syp = groundY + sinA * innerR;
-    const exp = x + cosA * outerR, eyp = groundY + sinA * outerR;
-    ctx.strokeStyle = '#ffffff';
-    ctx.fillStyle = '#ffffff';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(sxp, syp);
-    ctx.lineTo(exp, eyp);
-    ctx.stroke();
-    const headLen = 15;
-    const headAngle = Math.atan2(eyp - syp, exp - sxp);
-    ctx.beginPath();
-    ctx.moveTo(exp + Math.cos(headAngle) * 4, eyp + Math.sin(headAngle) * 4);
-    ctx.lineTo(exp - headLen * Math.cos(headAngle - 0.45), eyp - headLen * Math.sin(headAngle - 0.45));
-    ctx.lineTo(exp - headLen * Math.cos(headAngle + 0.45), eyp - headLen * Math.sin(headAngle + 0.45));
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
 // Gambar jejak "afterimage" Dash — siluet tipis pemain di posisi-posisi
 // sebelumnya selama dash, memudar & mengecil, kesan gerak sangat cepat.
 function drawDashTrail() {
@@ -5560,9 +6055,6 @@ function drawPlayer(x,y) {
   ctx.ellipse(x, y+16*PLAYER_SCALE, 14*PLAYER_SCALE * shadowScale, 5*PLAYER_SCALE * shadowScale, 0, 0, Math.PI*2); 
   ctx.fill();
 
-  // Panah arah bidik: nempel di tanah tepat di bawah kaki karakter, mengikuti sudut hadap 360°
-  drawAimArrow(x, y + 14*PLAYER_SCALE);
-
   // Animasi berjalan: bobbing naik-turun + sedikit squash/stretch (poin 3)
   const bounce = player.moving ? Math.abs(Math.sin(player.walkAnim)) * 5 * PLAYER_SCALE : 0;
   const squashX = player.moving ? 1 - Math.abs(Math.sin(player.walkAnim)) * 0.05 : 1;
@@ -5574,6 +6066,7 @@ function drawPlayer(x,y) {
 
   if (player.activeAura) drawAuraRing(x, renderY, player.activeAura);
   if (player.activeFrame) drawFrameRing(x, renderY, player.activeFrame);
+  if (currentModeId === 'tag' && myIsIt) drawTagRing(x, renderY);
 
   // Efek kedip merah saat kena dorongan (poin: kelihatan sendiri kalau habis kena pukul)
   if (player.hitFlashTimer > 0) {
@@ -5720,6 +6213,7 @@ function drawOtherPlayer(x, y, id, data, z) {
 
   if (data.activeAura) drawAuraRing(x, renderY, data.activeAura);
   if (data.activeFrame) drawFrameRing(x, renderY, data.activeFrame);
+  if (currentModeId === 'tag' && data.isIt) drawTagRing(x, renderY);
 
   let avImg = null;
   // Ambil foto sesuai ekspresi yang sedang dipakai pemain itu (fallback ke field 'avatar' lama)
@@ -5921,15 +6415,1339 @@ function drawMinimap() {
   ctx.restore();
 }
 
+// ---------- Minimap Mode Horor: denah ruangan sederhana biar nggak nyasar ----------
+// Beda dari drawMinimap() di atas (yang buat peta luar/WORLD_W-WORLD_H) — ini
+// gambar skema ruangan+lorong asylum dari HORROR_ROOMS/HORROR_CORRIDORS, plus titik
+// pemain & titik kuning barang misi yang belum diambil. Hantu SENGAJA tidak
+// ditampilkan di sini biar tetap mendebarkan.
+function drawHorrorMinimap() {
+  const boxW = 132, boxH = 96, pad = 14;
+  const panelX = pad, panelY = pad;
+
+  const totalColsPx = HORROR_LAYOUT.cols * TILE;
+  const totalRowsPx = HORROR_LAYOUT.rows * TILE;
+  const scale = Math.min((boxW - 10) / totalColsPx, (boxH - 10) / totalRowsPx);
+  const drawW = totalColsPx * scale, drawH = totalRowsPx * scale;
+  const originX = panelX + (boxW - drawW) / 2;
+  const originY = panelY + (boxH - drawH) / 2;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(8,8,8,0.72)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(panelX, panelY, boxW, boxH, 8);
+  ctx.fill(); ctx.stroke();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(panelX, panelY, boxW, boxH, 8);
+  ctx.clip();
+
+  // Denah ruangan & lorong (kotak abu-abu redup)
+  ctx.fillStyle = 'rgba(160,160,160,0.38)';
+  const allRects = HORROR_ROOMS.concat(HORROR_CORRIDORS);
+  for (const r of allRects) {
+    ctx.fillRect(
+      originX + r.x * TILE * scale, originY + r.y * TILE * scale,
+      r.w * TILE * scale, r.h * TILE * scale
+    );
+  }
+
+  // Titik kuning: barang misi yang BELUM diambil
+  for (const it of HORROR_MISSION_ITEMS) {
+    if (it.collected) continue;
+    ctx.fillStyle = '#ffd76a';
+    ctx.beginPath();
+    ctx.arc(originX + (it.x - HORROR_ORIGIN_X) * scale, originY + (it.y - HORROR_ORIGIN_Y) * scale, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Titik hijau: baterai cadangan yang BELUM diambil
+  for (const b of HORROR_BATTERY_ITEMS) {
+    if (b.collected) continue;
+    ctx.fillStyle = '#5ad46a';
+    ctx.beginPath();
+    ctx.arc(originX + (b.x - HORROR_ORIGIN_X) * scale, originY + (b.y - HORROR_ORIGIN_Y) * scale, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Titik biru: posisi pemain
+  const px = originX + (player.x - HORROR_ORIGIN_X) * scale;
+  const py = originY + (player.y - HORROR_ORIGIN_Y) * scale;
+  ctx.fillStyle = '#4a90e2';
+  ctx.beginPath(); ctx.arc(px, py, 3.2, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+
+  ctx.restore(); // clip panel
+  ctx.restore();
+}
+
+// =====================================================================================
+// ================= MODE HOROR: lantai gelap, senter, monster, audio, guncangan =========
+// =====================================================================================
+
+// ---------- Lantai batu gelap (dirender dari grid HORROR_LAYOUT, bukan 1 gambar besar) ----------
+function drawHorrorFloor() {
+  ctx.fillStyle = '#050505';
+  ctx.fillRect(0, 0, W, H);
+  const startCol = Math.floor((camera.x - HORROR_ORIGIN_X) / TILE) - 1;
+  const startRow = Math.floor((camera.y - HORROR_ORIGIN_Y) / TILE) - 1;
+  const colsNeeded = Math.ceil(W / TILE) + 3;
+  const rowsNeeded = Math.ceil(H / TILE) + 3;
+  for (let r = 0; r < rowsNeeded; r++) {
+    for (let c = 0; c < colsNeeded; c++) {
+      const col = startCol + c, row = startRow + r;
+      if (row < 0 || row >= HORROR_LAYOUT.rows || col < 0 || col >= HORROR_LAYOUT.cols) continue;
+      if (!HORROR_LAYOUT.floor[row][col]) continue;
+      const wx = HORROR_ORIGIN_X + col * TILE - camera.x;
+      const wy = HORROR_ORIGIN_Y + row * TILE - camera.y;
+      if (HORROR_TEXTURES.floor) {
+        ctx.drawImage(HORROR_TEXTURES.floor, wx, wy, TILE, TILE);
+      } else {
+        const shade = (col * 13 + row * 7) % 5;
+        ctx.fillStyle = shade < 2 ? '#231f19' : (shade < 4 ? '#2a2620' : '#1d1a15');
+        ctx.fillRect(wx, wy, TILE, TILE);
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1;
+        ctx.strokeRect(wx + 0.5, wy + 0.5, TILE - 1, TILE - 1);
+      }
+    }
+  }
+}
+
+// ---------- Senter: kerucut cahaya mengikuti arah hadap pemain (player.angle) ----------
+const HORROR_LIGHT_RANGE = 420;
+const HORROR_LIGHT_HALF_ANGLE = 0.55; // radian (~31.5°) — lebar kerucut senter
+const HORROR_NEAR_RADIUS = 84;        // area redup di sekeliling pemain, segala arah (diperbesar biar lebih terang)
+// Jumlah "ray" raycast buat bentuk kerucut senter/area redup. Diturunkan dari 40/24
+// jadi 16/10 biar ringan di HP low-end (raymarch tiap ray itu yang paling berat di
+// frame, bukan gambarnya) — hasilnya kerucut cahaya sedikit lebih "bersegi" tapi
+// hampir tidak kelihatan bedanya waktu main, sementara FPS jauh lebih stabil.
+const HORROR_CONE_RAY_COUNT = 16;
+const HORROR_NEAR_RAY_COUNT = 10;
+// ---------- Light occlusion: cahaya senter/redup TIDAK tembus tembok ----------
+// Pakai grid HORROR_LAYOUT.floor (true = lantai/lorong, false = tembok/luar area)
+// buat cek sel mana yang menghalangi cahaya.
+function horrorIsWallAt(wx, wy) {
+  const col = Math.floor((wx - HORROR_ORIGIN_X) / TILE);
+  const row = Math.floor((wy - HORROR_ORIGIN_Y) / TILE);
+  if (row < 0 || row >= HORROR_LAYOUT.rows || col < 0 || col >= HORROR_LAYOUT.cols) return true;
+  return !HORROR_LAYOUT.floor[row][col];
+}
+// Jalan dari (sx,sy) ke arah `angle`, berhenti begitu kena tembok atau capai maxDist.
+// Mengembalikan jarak tempuh sampai titik terakhir yang masih "kelihatan" (belum ketutup tembok).
+function horrorRaymarch(sx, sy, angle, maxDist, step) {
+  step = step || 8;
+  const dx = Math.cos(angle), dy = Math.sin(angle);
+  let dist = 0;
+  while (dist < maxDist) {
+    const nd = Math.min(dist + step, maxDist);
+    const wx = sx + dx * nd, wy = sy + dy * nd;
+    if (horrorIsWallAt(wx, wy)) return dist;
+    dist = nd;
+  }
+  return maxDist;
+}
+// Cek garis pandang lurus antar 2 titik (dipakai buat mastiin monster/objek beneran
+// kesorot senter, bukan sekadar masuk kerucut tapi ternyata ketutup tembok).
+function horrorHasLineOfSight(x0, y0, x1, y1) {
+  const dist = Math.hypot(x1 - x0, y1 - y0);
+  if (dist <= 0) return true;
+  const angle = Math.atan2(y1 - y0, x1 - x0);
+  const hitDist = horrorRaymarch(x0, y0, angle, dist, 8);
+  return hitDist >= dist - 6;
+}
+// Bangun poligon area kerucut senter yang sudah "kepotong" tembok — dipakai sebagai
+// area lubang cahaya (clip), jadi cahaya berhenti persis di tembok, bukan tembus.
+function horrorBuildConePolygon(px, py, angle, halfAngle, range, rayCount) {
+  const pts = [{ x: px, y: py }];
+  for (let i = 0; i <= rayCount; i++) {
+    const a = angle - halfAngle + (halfAngle * 2) * (i / rayCount);
+    const d = horrorRaymarch(px, py, a, range, 8);
+    pts.push({ x: px + Math.cos(a) * d, y: py + Math.sin(a) * d });
+  }
+  return pts;
+}
+// Bangun poligon area redup 360° di sekitar pemain, juga kepotong tembok.
+function horrorBuildRadialPolygon(px, py, range, rayCount) {
+  const pts = [];
+  for (let i = 0; i < rayCount; i++) {
+    const a = (Math.PI * 2) * (i / rayCount);
+    const d = horrorRaymarch(px, py, a, range, 6);
+    pts.push({ x: px + Math.cos(a) * d, y: py + Math.sin(a) * d });
+  }
+  return pts;
+}
+function horrorPolygonPath(c2d, pts, camX, camY, shakeX, shakeY) {
+  c2d.beginPath();
+  pts.forEach((p, i) => {
+    const x = p.x - camX + (shakeX || 0), y = p.y - camY + (shakeY || 0);
+    if (i === 0) c2d.moveTo(x, y); else c2d.lineTo(x, y);
+  });
+  c2d.closePath();
+}
+function isPointInFlashlight(wx, wy) {
+  if (!horrorFlashlightOn || horrorBattery <= 0) return false; // senter mati -> tidak ada yang tersorot
+  const dx = wx - player.x, dy = wy - player.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist > HORROR_LIGHT_RANGE) return false;
+  let inCone = dist <= HORROR_NEAR_RADIUS;
+  if (!inCone) {
+    const angToPoint = Math.atan2(dy, dx);
+    let diff = Math.abs(angToPoint - player.angle);
+    if (diff > Math.PI) diff = Math.PI * 2 - diff;
+    inCone = diff <= HORROR_LIGHT_HALF_ANGLE;
+  }
+  if (!inCone) return false;
+  return horrorHasLineOfSight(player.x, player.y, wx, wy); // senter tidak tembus tembok
+}
+const HORROR_LAMPS = MAP_OBJECTS.filter(o => o.type === 'horror_lamp');
+// Lampu ruangan defaultnya MATI — pemain harus mendekat & menyalakannya sendiri
+// (alasan buat menjelajah tiap ruangan, sekaligus bikin "zona aman" di dekat hantu
+// baru berlaku setelah lampunya benar-benar dinyalakan).
+HORROR_LAMPS.forEach(l => { l.horrorOn = false; });
+const HORROR_CABINETS = MAP_OBJECTS.filter(o => o.type === 'horror_cabinet' && o.mapId === HORROR_MAP_ID);
+HORROR_CABINETS.forEach(c => { c.horrorChecked = false; });
+const HORROR_DOORS = MAP_OBJECTS.filter(o => o.type === 'horror_door' && o.mapId === HORROR_MAP_ID);
+
+// ---------- Cari objek interaktif TERDEKAT di sekitar pemain (dipanggil tiap frame) ----------
+function updateHorrorInteractScan() {
+  let best = null, bestDist = HORROR_INTERACT_RADIUS;
+  const consider = (kind, x, y, ref) => {
+    const dist = Math.hypot(player.x - x, player.y - y);
+    if (dist < bestDist) { bestDist = dist; best = { kind, ref }; }
+  };
+  // Pintu dicek jarak ke KOTAK-nya (bukan cuma titik tengah), soalnya beberapa
+  // pintu di lorong lebar/tinggi bentuknya memanjang — biar tetap bisa
+  // diinteraksi walau pemain berdiri di ujung pintu, bukan pas di tengahnya.
+  for (const d of HORROR_DOORS) {
+    const dist = distToRect(player.x, player.y, d.cx, d.cy, d.cw, d.ch);
+    if (dist < bestDist) { bestDist = dist; best = { kind: 'door', ref: d }; }
+  }
+  for (const c of HORROR_CABINETS) consider('cabinet', c.x, c.y, c);
+  for (const l of HORROR_LAMPS) consider('lamp', l.x, l.y, l);
+  for (const n of HORROR_NOTES) { if (!n.found) consider('note', n.x, n.y, n); }
+  for (const k of HORROR_KEYS) { if (!k.collected) consider('key', k.x, k.y, k); }
+  consider('generator', HORROR_GENERATOR.x, HORROR_GENERATOR.y, HORROR_GENERATOR);
+  consider('exit', HORROR_EXIT.x, HORROR_EXIT.y, HORROR_EXIT);
+  horrorNearestInteractable = best;
+  updateHorrorInteractPromptUI();
+}
+// ---------- Suara pintu berderit (buka & tutup pakai suara yang sama) ----------
+function playDoorCreak() {
+  const actx = getSfxCtx();
+  if (!actx) return;
+  const t0 = actx.currentTime, dur = 0.35;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(220, t0);
+  o.frequency.exponentialRampToValueAtTime(140, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g).connect(actx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.05);
+}
+// ---------- Tombol Interaksi ditekan (✋ tombol layar / tombol E) ----------
+function handleHorrorInteract() {
+  if (!isHorrorMode() || !gameEntered || !horrorNearestInteractable) return;
+  const { kind, ref } = horrorNearestInteractable;
+  if (kind === 'door') {
+    if (ref.locked) {
+      const has = HORROR_KEYS.find(k => k.id === ref.requiresKey && k.collected);
+      if (!has) {
+        showToast('🔒 Pintu terkunci. Butuh Kunci Ruang Generator.');
+      } else {
+        ref.locked = false;
+        ref.collision = false;
+        playDoorCreak();
+        showToast('🔓 Pintu terbuka dengan kunci!');
+        if (HORROR_OBJECTIVE_STAGE === 'unlock') {
+          HORROR_OBJECTIVE_STAGE = 'generator';
+          showToast('⚙️ Masuk ke Ruang Bawah Tanah dan nyalakan generatornya.');
+        }
+      }
+    } else {
+      ref.collision = !ref.collision;
+      playDoorCreak();
+      showToast(ref.collision ? '🚪 Pintu ditutup' : '🚪 Pintu dibuka');
+    }
+  } else if (kind === 'cabinet') {
+    if (!ref.horrorChecked) {
+      ref.horrorChecked = true;
+      const flavor = HORROR_CABINET_FLAVORS[Math.floor(Math.random() * HORROR_CABINET_FLAVORS.length)];
+      showToast('🗄️ Kamu memeriksa lemari... ' + flavor);
+    } else {
+      showToast('🗄️ Lemari ini sudah kamu periksa, tidak ada apa-apa lagi.');
+    }
+  } else if (kind === 'lamp') {
+    ref.horrorOn = !ref.horrorOn;
+    showToast(ref.horrorOn ? '💡 Lampu dinyalakan' : '💡 Lampu dimatikan');
+  } else if (kind === 'note') {
+    ref.found = true;
+    showToast('📄 ' + ref.title + ': ' + ref.text);
+  } else if (kind === 'key') {
+    ref.collected = true;
+    horrorKeyCount++;
+    if (ref.isObjectiveKey) {
+      showToast('🔑 ' + ref.label + ' didapat!');
+      if (HORROR_OBJECTIVE_STAGE === 'findkey') {
+        HORROR_OBJECTIVE_STAGE = 'unlock';
+        showToast('🚪 Sekarang cari pintu Ruang Bawah Tanah yang terkunci.');
+      }
+    } else {
+      showToast('🔑 ' + ref.label + ' didapat! (' + horrorKeyCount + '/' + HORROR_KEYS.length + ')');
+    }
+  } else if (kind === 'generator') {
+    if (horrorPowerOn) {
+      showToast('⚡ Generator sudah menyala.');
+    } else if (HORROR_OBJECTIVE_STAGE !== 'generator') {
+      showToast('⚙️ Belum saatnya. Selesaikan dulu tahap sebelumnya.');
+    } else {
+      horrorPowerOn = true;
+      horrorPostPowerAggro = true;
+      HORROR_OBJECTIVE_STAGE = 'exit';
+      triggerScreenShake(8, 0.4);
+      showToast('⚡ Generator menyala! Listrik kembali menyala di seluruh gedung...');
+      showToast('🚪 Cepat cari Pintu Keluar! Dia mulai marah...');
+    }
+  } else if (kind === 'exit') {
+    if (!horrorPowerOn) {
+      showToast('🚪 Pintu depan masih gelap & macet. Nyalakan listrik dulu.');
+    } else if (!horrorGameWon) {
+      horrorGameWon = true;
+      HORROR_OBJECTIVE_STAGE = 'won';
+      HORROR_MONSTER.visible = false;
+      HORROR_MONSTER.state = 'idle';
+      stopHorrorAmbient();
+      showToast('🏆 Kamu berhasil kabur dari rumah! SELAMAT!');
+    }
+  }
+  updateHorrorInteractScan();
+}
+
+let lightCanvas = null, lightCtx = null;
+function ensureLightCanvas() {
+  if (!lightCanvas) { lightCanvas = document.createElement('canvas'); lightCtx = lightCanvas.getContext('2d'); }
+  if (lightCanvas.width !== canvas.width || lightCanvas.height !== canvas.height) {
+    lightCanvas.width = canvas.width;
+    lightCanvas.height = canvas.height;
+  }
+  const dpr = window.devicePixelRatio || 1;
+  lightCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+// (Kerucut lama tanpa occlusion sudah digantikan horrorBuildConePolygon + horrorPolygonPath di atas)
+// Menggambar kegelapan penuh layar lalu "melubangi" bagian yang disorot senter +
+// area dekat pemain + kolam cahaya redup di sekitar lampu ruangan (kalau ada di layar).
+// --- Seberapa gelap dasarnya & seberapa banyak ambient light merata yang
+// dikembalikan di atasnya. Dasar dibuat SANGAT gelap, tapi ambient-nya kecil
+// aja supaya lantai & barang di luar senter masih kelihatan SAMAR, bukan
+// hitam total. Tinggal ubah 2 angka ini kalau mau lebih/kurang terang. ---
+const HORROR_BASE_DARKNESS = 0.93;   // 0..1, makin besar makin gelap dasarnya
+const HORROR_AMBIENT_LIGHT = 0.20;   // 0..1, cahaya ambient merata (kecil = tetap gelap tapi tidak buta)
+
+function drawFlashlightOverlay(shakeX, shakeY) {
+  ensureLightCanvas();
+
+  // --- 1) Dasar: lingkungan sangat gelap menutupi seluruhnya ---
+  lightCtx.globalCompositeOperation = 'source-over';
+  lightCtx.fillStyle = `rgba(3,3,6,${HORROR_BASE_DARKNESS})`;
+  lightCtx.fillRect(0, 0, W, H);
+
+  // --- 2) Ambient light kecil, merata di SELURUH layar (bukan cuma di dekat
+  // pemain), biar siluet lantai & barang tetap terlihat samar-samar walau
+  // di luar sorotan senter. Pakai gradient halus dari tengah layar biar
+  // transisinya lembut, bukan rata datar mentah. ---
+  lightCtx.globalCompositeOperation = 'destination-out';
+  const ambGrad = lightCtx.createRadialGradient(
+    W / 2, H / 2, 0,
+    W / 2, H / 2, Math.max(W, H) * 0.75
+  );
+  ambGrad.addColorStop(0, `rgba(0,0,0,${HORROR_AMBIENT_LIGHT})`);
+  ambGrad.addColorStop(1, `rgba(0,0,0,${(HORROR_AMBIENT_LIGHT * 0.55).toFixed(2)})`);
+  lightCtx.fillStyle = ambGrad;
+  lightCtx.fillRect(0, 0, W, H);
+
+  const sx = player.x - camera.x + (shakeX || 0), sy = player.y - camera.y + (shakeY || 0);
+
+  // --- Senter cuma menyala kalau: masih ada baterai DAN tidak dimatikan manual.
+  // Baterai menipis (<20%) bikin senter mulai berkedip-kedip, nambah efek "hemat
+  // baterai atau nekat" makin terasa mendesak sebelum benar-benar padam. ---
+  const flashlightIsOn = horrorFlashlightOn && horrorBattery > 0;
+  const lowBatteryFlicker = flashlightIsOn && horrorBattery < 20
+    ? (Math.random() < 0.12 ? 0.25 + Math.random() * 0.3 : 1)
+    : 1;
+  // --- Fear tinggi (80-100%) bikin senter lebih sering berkedip juga, di luar
+  // sebab baterai — makin panik, makin sering "kedip" tanpa sebab jelas. ---
+  const fearFlicker = flashlightIsOn && horrorFear >= 80
+    ? (Math.random() < (horrorFear >= 100 ? 0.35 : 0.16) ? 0.25 + Math.random() * 0.3 : 1)
+    : 1;
+
+  if (flashlightIsOn) {
+    // --- Senter berkedip (kategori 8: dipicu saat hantu mengejar / tanda ambient) ---
+    const flickerFactor = (horrorLightFlicker > 0 ? Math.max(0.35, 1 - horrorLightFlicker * (0.5 + Math.random() * 0.4)) : 1) * lowBatteryFlicker * fearFlicker;
+    const effLightRange = HORROR_LIGHT_RANGE * flickerFactor;
+
+    // --- 3) Kerucut senter: terang & jelas, dipotong tembok (light occlusion)
+    // via raycast grid horor. Gradasi dibikin lebih banyak tahap biar transisi
+    // terang -> redup -> gelapnya lembut (tidak ada garis tegas). ---
+    const conePts = horrorBuildConePolygon(player.x, player.y, player.angle, HORROR_LIGHT_HALF_ANGLE, effLightRange, HORROR_CONE_RAY_COUNT);
+    lightCtx.save();
+    horrorPolygonPath(lightCtx, conePts, camera.x, camera.y, shakeX, shakeY);
+    lightCtx.clip();
+    lightCtx.globalCompositeOperation = 'destination-out';
+    let grad = lightCtx.createRadialGradient(sx, sy, 0, sx, sy, effLightRange);
+    grad.addColorStop(0, 'rgba(0,0,0,1)');
+    grad.addColorStop(0.35, 'rgba(0,0,0,0.92)');
+    grad.addColorStop(0.65, 'rgba(0,0,0,0.65)');
+    grad.addColorStop(0.88, 'rgba(0,0,0,0.28)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    lightCtx.fillStyle = grad;
+    lightCtx.beginPath(); lightCtx.arc(sx, sy, effLightRange, 0, Math.PI * 2); lightCtx.fill();
+    lightCtx.restore();
+
+    // --- Area redup 360° dekat pemain (di luar arah senter): juga dipotong
+    // tembok, gradasi lembut supaya terlihat seperti cahaya sekeliling badan. ---
+    const nearPts = horrorBuildRadialPolygon(player.x, player.y, HORROR_NEAR_RADIUS, HORROR_NEAR_RAY_COUNT);
+    lightCtx.save();
+    horrorPolygonPath(lightCtx, nearPts, camera.x, camera.y, shakeX, shakeY);
+    lightCtx.clip();
+    lightCtx.globalCompositeOperation = 'destination-out';
+    let nearGrad = lightCtx.createRadialGradient(sx, sy, 0, sx, sy, HORROR_NEAR_RADIUS);
+    nearGrad.addColorStop(0, 'rgba(0,0,0,0.48)');
+    nearGrad.addColorStop(0.6, 'rgba(0,0,0,0.28)');
+    nearGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    lightCtx.fillStyle = nearGrad;
+    lightCtx.beginPath(); lightCtx.arc(sx, sy, HORROR_NEAR_RADIUS, 0, Math.PI * 2); lightCtx.fill();
+    lightCtx.restore();
+  } else {
+    // --- Senter mati (baterai habis atau dimatikan manual): tidak ada cone
+    // maupun cahaya dekat badan sama sekali — cuma sisa ambient tipis (poin 2)
+    // yang bikin lantai/barang masih kelihatan SANGAT samar. ---
+  }
+
+  for (const lamp of HORROR_LAMPS) {
+    if (!lamp.horrorOn) continue; // lampu mati -> tidak menerangi apa-apa
+    const lx = lamp.x - camera.x + (shakeX || 0), ly = lamp.y - camera.y + (shakeY || 0);
+    if (lx < -120 || lx > W + 120 || ly < -120 || ly > H + 120) continue;
+    const flick = 0.65 + Math.abs(Math.sin(performance.now() / 220 + lamp.x)) * 0.35;
+    const r = 118 * flick;
+    lightCtx.save();
+    lightCtx.globalCompositeOperation = 'destination-out';
+    const g2 = lightCtx.createRadialGradient(lx, ly, 0, lx, ly, r);
+    g2.addColorStop(0, `rgba(0,0,0,${(0.72 * flick).toFixed(2)})`);
+    g2.addColorStop(0.6, `rgba(0,0,0,${(0.4 * flick).toFixed(2)})`);
+    g2.addColorStop(1, 'rgba(0,0,0,0)');
+    lightCtx.fillStyle = g2;
+    lightCtx.beginPath(); lightCtx.arc(lx, ly, r, 0, Math.PI * 2); lightCtx.fill();
+    lightCtx.restore();
+  }
+
+  // Vignette tipis tambahan di tepi layar biar makin terasa sempit & mencekam
+  lightCtx.globalCompositeOperation = 'source-over';
+  const vg = lightCtx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.3, W/2, H/2, Math.max(W,H)*0.7);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.42)');
+  lightCtx.fillStyle = vg;
+  lightCtx.fillRect(0, 0, W, H);
+
+  ctx.drawImage(lightCanvas, 0, 0, W, H);
+}
+
+// =====================================================================================
+// ================= SISTEM KEMUNCULAN HANTU (GHOST APPEARANCE SYSTEM) =================
+// Bukan 1 AI yang selalu mengejar, tapi rangkaian KEJADIAN (event) yang dipilih &
+// dijadwalkan bergantian, meniru dokumen desain 9-poin:
+// 1) hening dulu di awal + tanda-tanda ambient   2) muncul jauh (siluet)
+// 3) muncul di belakang pemain                   4) lewat cepat di ujung cone senter
+// 5) mengikuti dari jauh                         6) kemunculan palsu (tanpa hantu asli)
+// 7) kemunculan makin dekat kalau pemain berlama-lama di 1 area
+// 8) pengejaran penuh (butuh syarat: lama di area gelap)  9) semua diatur biar jarang & tidak berulang
+// =====================================================================================
+let horrorLightFlicker = 0; // 0..1, dipakai drawFlashlightOverlay buat "senter berkedip"
+
+// =====================================================================================
+// ================= SANITY / FEAR METER (indikator ketakutan pemain) ==================
+// 0-30%  : normal, tenang
+// 30-60% : mulai waspada, napas mulai terdengar
+// 60-80% : layar sedikit bergetar, penglihatan mulai terganggu (blur ringan)
+// 80-100%: detak jantung keras, senter lebih sering berkedip
+// 100%   : panik penuh (guncangan kuat, denyut merah di layar, jantung sangat cepat)
+//
+// Naik kalau hantu KELIHATAN (makin sering/dekat/langsung disorot senter = makin
+// cepat naik, kena jumpscare = lonjakan besar). Turun pelan-pelan kalau hantu TIDAK
+// kelihatan sama sekali, biar pemain bisa "tenang" lagi kalau berhasil sembunyi/kabur.
+// =====================================================================================
+let horrorFear = 0;             // 0..100
+let horrorBreathTimer = 3;      // jadwal suara napas berikutnya
+let horrorHeartbeatTimer = 1.2; // jadwal detak jantung berikutnya
+function resetHorrorFear() {
+  horrorFear = 0;
+  horrorBreathTimer = 3;
+  horrorHeartbeatTimer = 1.2;
+}
+function updateHorrorFear(dt) {
+  const m = HORROR_MONSTER;
+  let rate = -9; // default: hantu tidak kelihatan sama sekali -> makin tenang
+  if (m.visible) {
+    rate = 6; // dasar: ada kemunculan (siluet jauh dsb) -> tetap sedikit menaikkan fear
+    if (m.state === 'chase') rate = 24;          // dikejar langsung -> paling menegangkan
+    else if (m.state === 'stalking') rate = 17;  // mendekat pelan -> makin tegang
+    else if (m.state === 'watching') rate = 15;  // diam menatap -> menegangkan
+    else if (m.state === 'close') rate = 13;     // muncul dekat
+    if (isPointInFlashlight(m.x, m.y)) rate += 9; // benar-benar terlihat jelas kena senter, di state manapun
+  }
+  horrorFear = Math.max(0, Math.min(100, horrorFear + rate * dt));
+
+  // --- Napas mulai terdengar (30-80%) ---
+  horrorBreathTimer -= dt;
+  if (horrorFear >= 30 && horrorFear < 80 && horrorBreathTimer <= 0) {
+    horrorBreathTimer = 2.6 + Math.random() * 2.2;
+    playFearBreath(horrorFear >= 60 ? 0.4 : 0.22);
+  }
+  // --- Detak jantung keras (80-100%), makin cepat mendekati panik ---
+  horrorHeartbeatTimer -= dt;
+  if (horrorFear >= 80 && horrorHeartbeatTimer <= 0) {
+    const t = Math.min(1, (horrorFear - 80) / 20); // 0..1
+    horrorHeartbeatTimer = 1.1 - t * 0.7; // 1.1s -> 0.4s saat mendekati 100%
+    playHeartbeat(0.35 + t * 0.35);
+  }
+}
+
+const HORROR_MONSTER = {
+  x: 0, y: 0, speed: 100, chaseSpeed: 205,
+  visible: false,
+
+  // --- (1) Fase hening di awal: hantu BENAR-BENAR belum muncul, cuma tanda-tanda ---
+  gamePhase: 'quiet',                       // 'quiet' -> 'active'
+  quietTimer: 5 + Math.random() * 4,        // lama fase hening sebelum hantu boleh muncul pertama kali (dipersingkat)
+  ambientSignTimer: 1.5 + Math.random() * 2,  // penjadwal tanda-tanda aneh (langkah kaki / kedip senter) — lebih sering
+  pendingFootstepTimer: 0,                  // langkah kaki susulan yang ditunda beberapa detik
+
+  // --- Mesin kejadian (event) ---
+  state: 'idle',        // idle | distant | behind | passing | following | close | chase
+  stateTimer: 0,
+  eventCooldown: 0.8 + Math.random() * 1,
+  eventTarget: null,    // titik tujuan gerak untuk state 'passing'
+  behindSeen: false,
+
+  // --- (9) Ketegangan naik makin lama pemain bertahan -> kejadian makin sering ---
+  sessionTime: 0,
+
+  // --- (7) Eskalasi kemunculan dekat: makin sering trigger, makin dekat jaraknya ---
+  closeStreak: 0, closeCooldown: 0,
+
+  // --- (7) Deteksi pemain "berlama-lama" di 1 titik -> pemicu kemunculan dekat ---
+  lingerX: 0, lingerY: 0, lingerTimer: 0,
+
+  // --- (8) Deteksi pemain lama di area gelap -> syarat pengejaran boleh terjadi ---
+  darkExposure: 0,
+  chaseCooldown: 0, chaseGrowlTimer: 0,
+
+  // --- (baru) Mendengar langkah kaki pemain (lebih peka kalau pemain sprint) ---
+  heardTimer: 0,
+  // --- (baru) Mencari posisi terakhir pemain setelah kehilangan jejak (state 'searching') ---
+  searchX: 0, searchY: 0,
+  // --- (baru) Pura-pura pergi lalu muncul lagi sebentar kemudian ---
+  forceCloseNext: false,
+  // --- (baru) Jeda sebelum bisa mematikan lampu ruangan lagi ---
+  douseTimer: 4,
+
+  // --- (perbaikan) Ditatap senter berapa lama beruntun -> dipakai supaya hantu
+  // BENAR-BENAR kelihatan jelas (bukan langsung hilang begitu kena sorot), lalu
+  // bereaksi (diam mengamati, mendekat pelan, atau lenyap dgn kedipan singkat). ---
+  litTimer: 0,
+  reacted: false,          // sudah memutuskan reaksi utk kemunculan saat ini?
+  fadeTimer: 0, fadeDur: 0.35, // lenyap dgn transisi singkat, bukan hilang instan
+  growlTimer: 0,           // dipakai state 'watching'/'stalking' juga (bukan cuma chase)
+  footTimer: 0             // langkah kaki mendekat, frekuensi naik sesuai jarak (state 'stalking'/'chase')
+};
+// --- (baru) Jejak posisi pemain, dipakai hantu buat "muncul di tempat yang
+// sebelumnya pemain lewati" (event 'retrace'). Disimpan tiap ~1.4 detik saat bergerak. ---
+let horrorPlayerTrail = [];
+let horrorTrailTimer = 0;
+function initHorrorMonster() {
+  HORROR_MONSTER.x = HORROR_MONSTER_SPAWN.x;
+  HORROR_MONSTER.y = HORROR_MONSTER_SPAWN.y;
+}
+initHorrorMonster();
+resetHorrorMissions();
+resetHorrorBattery();
+resetHorrorFear();
+resetHorrorNotes();
+resetHorrorKeys();
+resetHorrorObjective();
+function horrorPointBlocked(x, y, radius) {
+  for (const obj of MAP_OBJECTS) {
+    if (!obj.collision || obj.mapId !== HORROR_MAP_ID) continue;
+    if (distToRect(x, y, obj.cx, obj.cy, obj.cw, obj.ch) < radius) return true;
+  }
+  return false;
+}
+function moveHorrorEntityToward(entity, tx, ty, speed, dt, radius) {
+  const ang = Math.atan2(ty - entity.y, tx - entity.x);
+  const nx = entity.x + Math.cos(ang) * speed * dt;
+  const ny = entity.y + Math.sin(ang) * speed * dt;
+  if (!horrorPointBlocked(nx, entity.y, radius)) entity.x = nx;
+  if (!horrorPointBlocked(entity.x, ny, radius)) entity.y = ny;
+}
+// Titik acak yang cukup jauh dari pemain & tidak nembus tembok — dasar buat hampir
+// semua event kemunculan (jauh/dekat/kejar), tinggal beda rentang jaraknya saja.
+function horrorRandomFarPoint(minDist, maxDist) {
+  for (let i = 0; i < 12; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const d = minDist + Math.random() * (maxDist - minDist);
+    const x = player.x + Math.cos(a) * d, y = player.y + Math.sin(a) * d;
+    if (!horrorPointBlocked(x, y, 14)) return { x, y };
+  }
+  return { x: HORROR_MONSTER.x, y: HORROR_MONSTER.y };
+}
+// "Zona aman": dekat lampu ruangan — dipakai buat menghentikan pengejaran (kategori 8).
+function horrorIsPlayerInSafeZone() {
+  for (const lamp of HORROR_LAMPS) {
+    if (!lamp.horrorOn) continue; // lampu mati tidak dianggap zona aman
+    if (Math.hypot(lamp.x - player.x, lamp.y - player.y) < 115) return true;
+  }
+  return false;
+}
+
+// ---------- (1 & 6) Tanda-tanda ambient: langkah kaki dari arah tak terlihat, atau
+// senter berkedip sebentar — TANPA hantu beneran muncul. Bikin pemain was-was tanpa
+// tahu apakah benar-benar sedang diawasi (juga dipakai sebagai "kemunculan palsu"). ----------
+function horrorTriggerAmbientSign() {
+  if (Math.random() < 0.55) playHorrorFootstep();
+  else horrorLightFlicker = Math.max(horrorLightFlicker, 0.18 + Math.random() * 0.22);
+}
+
+// ---------- (2) Kemunculan jauh: siluet samar berdiri diam. Kalau pemain SEMPAT
+// menyorotnya dengan senter, ia tidak langsung hilang — malah harus benar-benar
+// kelihatan jelas dulu, baru bereaksi (diam mengamati / mulai mendekat / lenyap). ----------
+function horrorStartDistantEvent(m) {
+  const p = horrorRandomFarPoint(360, 520);
+  m.x = p.x; m.y = p.y;
+  m.state = 'distant'; m.visible = true; m.stateTimer = 1.6 + Math.random() * 1.2;
+  m.litTimer = 0; m.reacted = false;
+}
+
+// ---------- (6) Kemunculan palsu: cuma efek suara/cahaya, hantu beneran tidak muncul ----------
+function horrorStartFakeEvent(m) { horrorTriggerAmbientSign(); }
+
+// ---------- (3) Muncul di area yang baru dilewati pemain: diam menghadap pemain,
+// hilang begitu pemain berbalik & melihatnya, lalu terdengar langkah kaki susulan. ----------
+function horrorStartBehindEvent(m) {
+  const behindAngle = player.angle + Math.PI;
+  const dist = 90 + Math.random() * 40;
+  const x = player.x + Math.cos(behindAngle) * dist, y = player.y + Math.sin(behindAngle) * dist;
+  if (horrorPointBlocked(x, y, 13)) { m.state = 'idle'; return; }
+  m.x = x; m.y = y;
+  m.state = 'behind'; m.visible = true; m.stateTimer = 2 + Math.random() * 1.3;
+  m.behindSeen = false;
+  m.litTimer = 0; m.reacted = false;
+}
+
+// ---------- (4) Bayangan lewat cepat di ujung cone senter: cuma sekilas, hanya
+// sebagian tubuh/siluet yang kelihatan, lalu area kembali normal. ----------
+function horrorStartPassingEvent(m) {
+  const edgeAngle = player.angle + (Math.random() < 0.5 ? 1 : -1) * (HORROR_LIGHT_HALF_ANGLE + 0.3);
+  const dist = HORROR_LIGHT_RANGE * (0.55 + Math.random() * 0.25);
+  m.x = player.x + Math.cos(edgeAngle - 0.5) * dist;
+  m.y = player.y + Math.sin(edgeAngle - 0.5) * dist;
+  m.eventTarget = { x: player.x + Math.cos(edgeAngle + 0.5) * dist, y: player.y + Math.sin(edgeAngle + 0.5) * dist };
+  m.state = 'passing'; m.visible = true; m.stateTimer = 0.9;
+  m.litTimer = 0; m.reacted = false;
+}
+
+// ---------- (5) Mengikuti dari jauh: jaga jarak di belakang pemain, ikut berhenti
+// kalau pemain berhenti, hanya kelihatan sesekali di area gelap/remang. ----------
+function horrorStartFollowingEvent(m) {
+  const behind = player.angle + Math.PI + (Math.random() - 0.5) * 0.8;
+  const x = player.x + Math.cos(behind) * 260, y = player.y + Math.sin(behind) * 260;
+  if (!horrorPointBlocked(x, y, 14)) { m.x = x; m.y = y; }
+  m.state = 'following'; m.stateTimer = 3 + Math.random() * 2.5;
+  m.visible = !horrorIsWallAt(m.x, m.y);
+  m.litTimer = 0; m.reacted = false;
+}
+
+// ---------- (7) Kemunculan dekat: kalau pemain kelamaan di 1 area, hantu muncul
+// hanya beberapa meter darinya. Tiap trigger berturut-turut jaraknya dibuat makin dekat. ----------
+function horrorStartCloseEvent(m) {
+  m.closeStreak = Math.min(m.closeStreak + 1, 6);
+  const dist = Math.max(55, 170 - m.closeStreak * 20);
+  const p = horrorRandomFarPoint(dist, dist + 30);
+  m.x = p.x; m.y = p.y;
+  m.state = 'close'; m.visible = true; m.stateTimer = 2.2 + Math.random() * 1.2;
+  m.closeCooldown = 9;
+  m.litTimer = 0; m.reacted = false;
+}
+
+// ---------- (8) Pengejaran: hantu bergerak lebih cepat dari pemain, senter mulai
+// berkedip, suara makin keras waktu jaraknya makin dekat. Berhenti begitu pemain
+// masuk zona terang/aman, atau batas waktu maksimum habis. ----------
+function horrorStartChaseEvent(m) {
+  const p = horrorRandomFarPoint(220, 320);
+  m.x = p.x; m.y = p.y;
+  m.state = 'chase'; m.visible = true; m.stateTimer = 14;
+  m.chaseGrowlTimer = 0; m.footTimer = 0;
+  triggerScreenShake(6, 0.3);
+}
+// ---------- Naik dari 'stalking' ke kejaran penuh TANPA berpindah posisi (hantu
+// memang sudah mendekat pelan-pelan, jadi wajar kalau lanjut mengejar dari situ). ----------
+function horrorEscalateToChase(m) {
+  m.state = 'chase'; m.stateTimer = 14; m.chaseGrowlTimer = 0; m.footTimer = 0;
+  triggerScreenShake(6, 0.3);
+}
+// ---------- Hantu lenyap dengan transisi singkat (kedipan), bukan hilang instan.
+// scheduleReturn: kalau true, ada peluang ia "kembali lagi" sebentar kemudian. ----------
+function horrorStartVanish(m, dur, scheduleReturn) {
+  m.state = 'vanishing';
+  m.fadeDur = dur || 0.4;
+  m.fadeTimer = m.fadeDur;
+  m.stateTimer = m.fadeDur;
+  m._vanishReturn = !!scheduleReturn;
+}
+
+// ---------- (baru-1 & baru-2) Radius "suara" pemain: hantu bisa mendengar langkah
+// kaki pemain dalam radius ini walau tidak sedang melihatnya. Sprint jauh lebih
+// berisik (radius & kepekaan lebih besar) daripada jalan biasa. ----------
+function horrorPlayerNoiseRadius() {
+  if (!player.moving) return 0;
+  return player.sprinting ? 340 : 170;
+}
+// ---------- (baru-1 & baru-2) Dipanggil waktu hantu "mendengar" pemain cukup lama:
+// kalau pemain sprint (berisik) & sudah cukup lama di area gelap -> langsung kejar;
+// selain itu cuma mendekat ('close') atau mulai mengikuti diam-diam ('following'). ----------
+function horrorStartHearingEvent(m, loud) {
+  if (loud && m.darkExposure > 4 && m.chaseCooldown <= 0) { horrorStartChaseEvent(m); return; }
+  if (Math.random() < (loud ? 0.6 : 0.35)) horrorStartCloseEvent(m);
+  else horrorStartFollowingEvent(m);
+}
+// ---------- (baru-5) Kalau sebuah kejadian berakhir TANPA hantu berhasil menangkap
+// pemain, kadang dijadwalkan "kembali lagi" sebentar kemudian (pura-pura pergi lalu
+// muncul lagi) dengan memaksa kejadian berikutnya jadi 'close' & mempercepat jadwalnya. ----------
+function horrorMaybeScheduleReturn(m) {
+  if (Math.random() < 0.32) {
+    m.eventCooldown = 1.2 + Math.random() * 1.3;
+    m.forceCloseNext = true;
+  }
+}
+// ---------- (baru-6) Hantu bisa mematikan lampu ruangan yang sedang dinyalakan
+// kalau kebetulan sedang beraksi (mengikuti/dekat/mengejar) di dekat lampu itu —
+// bikin "zona aman" pemain tiba-tiba hilang & harus dinyalakan ulang. ----------
+function horrorGhostMaybeDouseLamp(m, dt) {
+  m.douseTimer -= dt;
+  if (m.douseTimer > 0) return;
+  if (!(m.state === 'close' || m.state === 'following' || m.state === 'chase' || m.state === 'stalking' || m.state === 'watching')) return;
+  for (const lamp of HORROR_LAMPS) {
+    if (!lamp.horrorOn) continue;
+    if (Math.hypot(lamp.x - m.x, lamp.y - m.y) < 90) {
+      lamp.horrorOn = false;
+      showToast('💡 Lampu tiba-tiba padam sendiri...');
+      triggerScreenShake(3, 0.2);
+      m.douseTimer = 7 + Math.random() * 6;
+      break;
+    }
+  }
+}
+// ---------- (baru-7) Hantu muncul di titik yang BARU SAJA dilewati pemain (dari
+// jejak posisi), bukan di sekitar posisi pemain sekarang — kesannya seperti sedang
+// menyusuri jalan yang sama dengan pemain. ----------
+function horrorStartRetraceEvent(m) {
+  const candidates = horrorPlayerTrail.filter(p => Math.hypot(p.x - player.x, p.y - player.y) > 150);
+  if (!candidates.length) { horrorStartDistantEvent(m); return; }
+  const p = candidates[Math.floor(Math.random() * candidates.length)];
+  m.x = p.x; m.y = p.y;
+  m.state = 'distant'; m.visible = true; m.stateTimer = 1.5 + Math.random();
+  m.litTimer = 0; m.reacted = false;
+}
+
+// ---------- Pilih kejadian berikutnya secara acak berbobot. Bobot 'close' & 'chase'
+// naik seiring tension (kategori 9); 'chase' hanya boleh kalau pemain sudah cukup
+// lama di area gelap (kategori 8) dan tidak sedang di zona aman. ----------
+function horrorPickNextEvent(m, tension, inSafeZone) {
+  // (baru-5) Kalau sebelumnya dijadwalkan "kembali lagi", langsung muncul dekat lagi
+  // tanpa diundi, tidak perlu nunggu giliran acak biasa.
+  if (m.forceCloseNext) { m.forceCloseNext = false; horrorStartCloseEvent(m); return; }
+
+  const chaseEligible = m.darkExposure > 6 && m.chaseCooldown <= 0 && !inSafeZone;
+  const options = [
+    { type: 'distant',   weight: 4.5 },
+    { type: 'fake',      weight: 1 },        // dikurangi: kemunculan asli lebih diutamakan drpd cuma efek palsu
+    { type: 'behind',    weight: 3 },
+    { type: 'passing',   weight: 3 },
+    { type: 'following', weight: 2 + tension },
+    { type: 'close',     weight: m.closeCooldown <= 0 ? 2 + tension * 2 : 0 },
+    { type: 'retrace',   weight: horrorPlayerTrail.length >= 3 ? 2 + tension : 0 }
+  ];
+  if (chaseEligible) options.push({ type: 'chase', weight: 1 + tension * 1.4 });
+
+  let total = 0; for (const o of options) total += o.weight;
+  let r = Math.random() * total, picked = 'distant';
+  for (const o of options) { r -= o.weight; if (r <= 0) { picked = o.type; break; } }
+
+  if (picked === 'distant') horrorStartDistantEvent(m);
+  else if (picked === 'fake') horrorStartFakeEvent(m);
+  else if (picked === 'behind') horrorStartBehindEvent(m);
+  else if (picked === 'passing') horrorStartPassingEvent(m);
+  else if (picked === 'following') horrorStartFollowingEvent(m);
+  else if (picked === 'close') horrorStartCloseEvent(m);
+  else if (picked === 'chase') horrorStartChaseEvent(m);
+  else if (picked === 'retrace') horrorStartRetraceEvent(m);
+}
+
+// ---------- Update per-frame untuk event yang sedang berjalan (state != 'idle') ----------
+function horrorUpdateActiveState(m, dt) {
+  m.stateTimer -= dt;
+
+  if (m.state === 'distant') {
+    // (perbaikan) Kena sorot senter TIDAK lagi bikin langsung hilang — sebaliknya,
+    // pemain harus benar-benar melihatnya dulu (siluet tegas kena cahaya) sebelum
+    // hantu bereaksi: diam mengamati (watching), mulai mendekat pelan (stalking),
+    // atau lenyap dengan kedipan singkat.
+    if (isPointInFlashlight(m.x, m.y)) m.litTimer += dt;
+    else m.litTimer = Math.max(0, m.litTimer - dt * 0.5);
+
+    if (!m.reacted && m.litTimer > 0.7) {
+      m.reacted = true;
+      const r = Math.random();
+      if (r < 0.4) { m.state = 'watching'; m.stateTimer = 1.4 + Math.random() * 1.2; }
+      else if (r < 0.75) { m.state = 'stalking'; m.stateTimer = 3 + Math.random() * 2; }
+      else horrorStartVanish(m, 0.3, true);
+      return;
+    }
+    if (m.stateTimer <= 0) horrorStartVanish(m, 0.5, false);
+    return;
+  }
+
+  if (m.state === 'vanishing') {
+    m.fadeTimer -= dt;
+    if (m.fadeTimer <= 0) {
+      m.visible = false; m.state = 'idle'; m.fadeTimer = 0;
+      if (m._vanishReturn) horrorMaybeScheduleReturn(m);
+    }
+    return;
+  }
+
+  // ---------- (baru) Diam mengamati: berhenti total, hanya sway halus, tatap
+  // pemain — momen "dia benar-benar melihatku" yang paling menegangkan sebelum
+  // memutuskan mendekat atau pergi. ----------
+  if (m.state === 'watching') {
+    horrorLightFlicker = Math.max(horrorLightFlicker, 0.15);
+    if (horrorIsPlayerInSafeZone()) { horrorStartVanish(m, 0.35, false); return; }
+    if (Math.hypot(player.x - m.x, player.y - m.y) < 24) {
+      triggerJumpscare(); m.visible = false; m.state = 'idle'; m.chaseCooldown = 10; return;
+    }
+    if (m.stateTimer <= 0) {
+      if (Math.random() < 0.5) { m.state = 'stalking'; m.stateTimer = 2.5 + Math.random() * 2; }
+      else horrorStartVanish(m, 0.35, true);
+    }
+    return;
+  }
+
+  // ---------- (baru) Mendekat pelan: hantu benar-benar berjalan mendekati pemain
+  // dengan gerakan tidak wajar, langkah kaki & geraman makin sering/keras seiring
+  // jarak mengecil. Bisa naik jadi kejaran penuh kalau syarat terpenuhi, atau
+  // menyerah & lenyap kalau pemain berhasil menjauh / masuk zona aman. ----------
+  if (m.state === 'stalking') {
+    moveHorrorEntityToward(m, player.x, player.y, m.speed * 0.58, dt, 14);
+    const dist = Math.hypot(player.x - m.x, player.y - m.y);
+
+    m.footTimer -= dt;
+    if (m.footTimer <= 0) {
+      m.footTimer = Math.max(0.32, 1.0 - (1 - Math.min(1, dist / 280)) * 0.65);
+      playHorrorFootstep();
+      if (dist < 160) triggerScreenShake(1.4 + (160 - dist) / 45, 0.12); // getaran ringan, makin dekat makin kuat
+    }
+
+    m.growlTimer -= dt;
+    if (m.growlTimer <= 0) {
+      m.growlTimer = 0.7 + Math.random() * 0.5;
+      if (dist < 220) playMonsterGrowl(Math.max(0.06, 0.28 - dist / 900));
+      if (horrorIsPlayerInSafeZone()) { horrorStartVanish(m, 0.4, true); return; }
+      if (dist < 34) { triggerJumpscare(); m.visible = false; m.state = 'idle'; m.chaseCooldown = 14; return; }
+      if (dist < 150 && m.chaseCooldown <= 0 && Math.random() < 0.3) { horrorEscalateToChase(m); return; }
+    }
+    if (m.stateTimer <= 0) { horrorStartVanish(m, 0.4, true); return; }
+    return;
+  }
+
+  if (m.state === 'behind') {
+    const angToGhost = Math.atan2(m.y - player.y, m.x - player.x);
+    let diff = Math.abs(angToGhost - player.angle);
+    if (diff > Math.PI) diff = Math.PI * 2 - diff;
+    if (diff <= HORROR_LIGHT_HALF_ANGLE + 0.15) m.behindSeen = true; // pemain sudah berbalik & melihatnya
+    if (m.behindSeen || m.stateTimer <= 0) {
+      m.visible = false; m.state = 'idle';
+      m.pendingFootstepTimer = 0.8 + Math.random() * 0.6; // langkah kaki susulan dari belakang
+    }
+    return;
+  }
+
+  if (m.state === 'passing') {
+    moveHorrorEntityToward(m, m.eventTarget.x, m.eventTarget.y, m.chaseSpeed * 1.6, dt, 8);
+    const done = Math.hypot(m.eventTarget.x - m.x, m.eventTarget.y - m.y) < 14;
+    if (done || m.stateTimer <= 0) { m.visible = false; m.state = 'idle'; }
+    return;
+  }
+
+  if (m.state === 'following') {
+    const behind = player.angle + Math.PI;
+    const tx = player.x + Math.cos(behind) * 240, ty = player.y + Math.sin(behind) * 240;
+    if (player.moving) moveHorrorEntityToward(m, tx, ty, m.speed * 0.9, dt, 14);
+    else m.visible = m.visible; // ikut berhenti kalau pemain berhenti (kategori 5)
+    m.visible = horrorIsWallAt(m.x, m.y) ? false : m.visible;
+    if (m.stateTimer <= 0) { m.visible = false; m.state = 'idle'; horrorMaybeScheduleReturn(m); return; }
+    if (Math.hypot(player.x - m.x, player.y - m.y) < 30) { triggerJumpscare(); m.visible = false; m.state = 'idle'; }
+    return;
+  }
+
+  if (m.state === 'close') {
+    // (perbaikan) Sama seperti 'distant': kena senter tidak lagi langsung
+    // menyembunyikannya. Pada jarak sedekat ini, reaksinya harus lebih cepat &
+    // lebih besar kemungkinan langsung mendekat, bukan cuma diam saja.
+    if (isPointInFlashlight(m.x, m.y)) m.litTimer += dt;
+    else m.litTimer = Math.max(0, m.litTimer - dt * 0.5);
+
+    if (!m.reacted && m.litTimer > 0.4) {
+      m.reacted = true;
+      const r = Math.random();
+      if (r < 0.3) { m.state = 'watching'; m.stateTimer = 1 + Math.random(); }
+      else if (r < 0.75) { m.state = 'stalking'; m.stateTimer = 2.5 + Math.random() * 1.5; }
+      else horrorStartVanish(m, 0.3, true);
+      return;
+    }
+    if (m.stateTimer <= 0) horrorStartVanish(m, 0.45, true);
+    if (Math.hypot(player.x - m.x, player.y - m.y) < 26) { triggerJumpscare(); m.visible = false; m.state = 'idle'; }
+    return;
+  }
+
+  // ---------- (baru-3) Mencari posisi terakhir pemain: dipakai setelah hantu
+  // kehilangan jejak waktu mengejar (pemain kabur ke zona aman / waktu kejar habis).
+  // Hantu jalan ke titik terakhir pemain terlihat, "menengok-nengok" sebentar,
+  // baru menyerah & masuk idle (kadang langsung dijadwalkan muncul lagi). ----------
+  if (m.state === 'searching') {
+    moveHorrorEntityToward(m, m.searchX, m.searchY, m.speed * 0.85, dt, 12);
+    const arrived = Math.hypot(m.searchX - m.x, m.searchY - m.y) < 22;
+    if (arrived && m.stateTimer > 1.2) m.stateTimer = 1.2; // sudah sampai -> cuma sebentar lagi sebelum menyerah
+    if (m.stateTimer <= 0) { m.visible = false; m.state = 'idle'; horrorMaybeScheduleReturn(m); return; }
+    if (Math.hypot(player.x - m.x, player.y - m.y) < 26) { triggerJumpscare(); m.visible = false; m.state = 'idle'; m.chaseCooldown = 14; }
+    return;
+  }
+
+  if (m.state === 'chase') {
+    moveHorrorEntityToward(m, player.x, player.y, m.chaseSpeed, dt, 12);
+    horrorLightFlicker = 0.25 + Math.random() * 0.35;
+    const dist = Math.hypot(player.x - m.x, player.y - m.y);
+    m.chaseGrowlTimer -= dt;
+    if (m.chaseGrowlTimer <= 0) { m.chaseGrowlTimer = 0.5; playMonsterGrowl(Math.max(0.08, 0.5 - dist / 500)); }
+    // (perbaikan) Langkah kaki & getaran layar makin sering & makin keras
+    // seiring jaraknya makin dekat — kombinasi tanda serangan sebelum jumpscare.
+    m.footTimer -= dt;
+    if (m.footTimer <= 0) {
+      m.footTimer = Math.max(0.16, 0.48 - (1 - Math.min(1, dist / 300)) * 0.34);
+      playHorrorFootstep();
+      if (dist < 150) triggerScreenShake(2 + (150 - dist) / 18, 0.15);
+    }
+    if (horrorIsPlayerInSafeZone() || m.stateTimer <= 0) {
+      // (baru-3 & baru-4) Berhenti mengejar begitu masuk zona aman / waktu habis,
+      // tapi hantu tidak langsung "menghilang" — ia menuju posisi terakhir pemain
+      // terlihat dulu (state 'searching') sebelum benar-benar menyerah.
+      m.searchX = player.x; m.searchY = player.y;
+      m.state = 'searching'; m.stateTimer = 3.5 + Math.random() * 2; m.visible = true;
+      m.chaseCooldown = 12; horrorLightFlicker = 0; return;
+    }
+    if (dist < 26) {
+      triggerJumpscare(); m.visible = false; m.state = 'idle'; m.chaseCooldown = 14; horrorLightFlicker = 0;
+    }
+    return;
+  }
+}
+
+function updateHorrorMonster(dt) {
+  const m = HORROR_MONSTER;
+  if (horrorGameWon) { m.visible = false; return; } // sudah kabur -> hantu berhenti total
+
+  m.sessionTime += dt;
+
+  // (baru-7) Catat jejak posisi pemain tiap ~1.4 detik selagi bergerak, dipakai
+  // event 'retrace' biar hantu bisa muncul di tempat yang baru saja dilewati pemain.
+  horrorTrailTimer -= dt;
+  if (horrorTrailTimer <= 0 && player.moving) {
+    horrorTrailTimer = 1.4;
+    horrorPlayerTrail.push({ x: player.x, y: player.y });
+    if (horrorPlayerTrail.length > 12) horrorPlayerTrail.shift();
+  }
+
+  // Efek kedip senter & langkah kaki tertunda meluruh tiap frame, apa pun state-nya
+  if (horrorLightFlicker > 0 && m.state !== 'chase') horrorLightFlicker = Math.max(0, horrorLightFlicker - dt * 1.6);
+  if (m.pendingFootstepTimer > 0) {
+    m.pendingFootstepTimer -= dt;
+    if (m.pendingFootstepTimer <= 0) playHorrorFootstep();
+  }
+
+  // Ketegangan 0..1, penuh setelah ~70 detik bertahan — dan naik lebih tinggi lagi
+  // begitu listrik sudah menyala (sistem tujuan tahap akhir, hantu makin agresif).
+  const tension = Math.min(1, m.sessionTime / 70 + (horrorPostPowerAggro ? 0.4 : 0));
+  const inSafeZone = horrorIsPlayerInSafeZone();
+  if (inSafeZone) m.darkExposure = Math.max(0, m.darkExposure - dt * 2);
+  else m.darkExposure += dt;
+
+  // (7) Deteksi "berlama-lama di 1 area": reset kalau pemain sudah pindah cukup jauh
+  if (Math.hypot(player.x - m.lingerX, player.y - m.lingerY) > 130) {
+    m.lingerX = player.x; m.lingerY = player.y; m.lingerTimer = 0;
+  } else if (m.state === 'idle') {
+    m.lingerTimer += dt;
+  }
+
+  m.ambientSignTimer -= dt;
+  if (m.ambientSignTimer <= 0 && m.state === 'idle') {
+    m.ambientSignTimer = (m.gamePhase === 'quiet' ? 5 : 9) + Math.random() * 7;
+    horrorTriggerAmbientSign();
+  }
+
+  // (1) Fase hening di awal permainan: belum ada hantu yang benar-benar muncul
+  if (m.gamePhase === 'quiet') {
+    m.quietTimer -= dt;
+    if (m.quietTimer <= 0) m.gamePhase = 'active';
+    return;
+  }
+
+  if (m.closeCooldown > 0) m.closeCooldown -= dt;
+  if (m.chaseCooldown > 0) m.chaseCooldown -= dt;
+
+  // (baru-6) Hantu bisa mematikan lampu ruangan kalau kebetulan lagi beraksi dekat
+  // salah satu lampu yang menyala — dicek tiap frame, jarang kena cooldown sendiri.
+  horrorGhostMaybeDouseLamp(m, dt);
+
+  if (m.state !== 'idle') { horrorUpdateActiveState(m, dt); return; }
+
+  // (baru-1 & baru-2) Hantu "mendengar" langkah kaki pemain dalam radius tertentu
+  // walau belum kelihatan — sprint jauh lebih berisik & lebih cepat memancingnya.
+  const noiseR = horrorPlayerNoiseRadius();
+  if (noiseR > 0 && !inSafeZone) {
+    const distToGhost = Math.hypot(player.x - m.x, player.y - m.y);
+    if (distToGhost < noiseR) {
+      m.heardTimer += dt;
+      if (m.heardTimer > (player.sprinting ? 0.4 : 1.1)) {
+        m.heardTimer = 0;
+        horrorStartHearingEvent(m, player.sprinting);
+        return;
+      }
+    } else {
+      m.heardTimer = 0;
+    }
+  } else {
+    m.heardTimer = 0;
+  }
+
+  // Kelamaan diam di 1 titik -> paksa kemunculan dekat sekarang juga (kategori 7)
+  if (m.lingerTimer > 7 && m.closeCooldown <= 0) {
+    m.lingerTimer = 0;
+    horrorStartCloseEvent(m);
+    return;
+  }
+
+  m.eventCooldown -= dt;
+  if (m.eventCooldown > 0) return;
+  m.eventCooldown = (1.2 - tension * 0.6) + Math.random() * (1.6 - tension * 0.6); // ~4x/10 detik sejak awal, makin sering lagi seiring tension
+  horrorPickNextEvent(m, tension, inSafeZone);
+}
+
+// Siluet gelap tinggi-kurus. Transparansi beda-beda tergantung jenis kejadian:
+// 'distant'/'following' lebih samar (siluet jauh), 'chase' paling jelas & tegas.
+// PERBAIKAN: kena sorot senter langsung (isPointInFlashlight) justru menambah
+// kejelasan (bukan menyembunyikannya) — fitur wajah/mata & rim cahaya baru
+// muncul saat benar-benar disorot atau sudah dekat, biar tiap kemunculan terasa
+// benar-benar "terlihat", bukan sekadar suara atau kedipan sekilas.
+function drawHorrorMonsterEntity(sx, sy) {
+  const m = HORROR_MONSTER;
+  if (!m.visible) return;
+  ctx.save();
+
+  // --- Alpha dasar per-state (siluet jauh = samar, makin dekat/genting = makin tegas) ---
+  let alpha = 0.9;
+  if (m.state === 'distant') alpha = 0.55;
+  else if (m.state === 'following') alpha = 0.45;
+  else if (m.state === 'passing') alpha = 0.7;
+  else if (m.state === 'searching') alpha = 0.78;
+  else if (m.state === 'watching') alpha = 0.8;
+  else if (m.state === 'stalking') alpha = 0.88;
+  else if (m.state === 'chase') alpha = 1;
+
+  // --- (perbaikan) Kalau BENAR-BENAR kena sorot senter langsung, hantu harus
+  // terlihat JELAS & tegas — bukan malah tambah samar. Ini kebalikan dari versi
+  // lama yang menyembunyikan hantu begitu kesorot. ---
+  const lit = isPointInFlashlight(m.x, m.y);
+  if (lit) alpha = Math.min(1, alpha + 0.35);
+
+  // --- Lenyap dengan transisi singkat (kedipan), bukan hilang mendadak ---
+  if (m.fadeTimer > 0) alpha *= Math.max(0, m.fadeTimer / m.fadeDur);
+
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+  ctx.translate(sx, sy);
+
+  const dist = Math.hypot(player.x - m.x, player.y - m.y);
+  const closeUp = dist < 170;    // cukup dekat utk mulai kelihatan detail wajah
+  const veryClose = dist < 80;   // sangat dekat -> paling menyeramkan
+
+  if (HORROR_TEXTURES.ghost) {
+    // Gambar dianggap "berdiri" -> titik (sx,sy) ada di tengah-bawah gambar (kaki).
+    const gw = 50, gh = 66; // sesuaikan kalau proporsi PNG kamu beda
+    ctx.drawImage(HORROR_TEXTURES.ghost, -gw / 2, -gh, gw, gh);
+  } else {
+    const t = performance.now() / 300;
+    // Gerakan tidak normal: sway pelan + sesekali "tersentak" kecil saat dekat/mengejar
+    const jitter = (m.state === 'chase' || m.state === 'stalking') ? (Math.random() - 0.5) * 1.4 : 0;
+    const sway = Math.sin(t * (m.state === 'chase' ? 1.8 : 1)) * (m.state === 'chase' ? 3.5 : 2) + jitter;
+
+    // Sosok tinggi-kurus: bayangan kaki, badan (lebih ramping & tinggi dari versi lama),
+    // kepala sedikit menunduk/miring biar terasa tidak wajar.
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath(); ctx.ellipse(sway, 5, 12, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = '#070606';
+    // Badan
+    ctx.beginPath(); ctx.ellipse(sway, -6, 10, 30, 0, 0, Math.PI * 2); ctx.fill();
+    // Bahu sedikit lebih lebar di atas biar tidak seperti "kacang"
+    ctx.beginPath(); ctx.ellipse(sway * 0.85, -30, 8.5, 6, 0, 0, Math.PI * 2); ctx.fill();
+    // Kepala miring (tilt) — kesan tidak normal
+    const tilt = Math.sin(t * 0.6) * 0.12;
+    ctx.save();
+    ctx.translate(sway * 0.7, -40);
+    ctx.rotate(tilt);
+    ctx.beginPath(); ctx.ellipse(0, 0, 7.5, 9, 0, 0, Math.PI * 2); ctx.fill();
+
+    // --- Fitur wajah HANYA muncul kalau dekat atau sedang benar-benar disorot
+    // senter/state 'watching'/'stalking'/'chase' — supaya kemunculan jauh tetap
+    // jadi siluet polos yang menegangkan (bukan "kelihatan jelas dari mana saja"). ---
+    const showFace = lit || closeUp || m.state === 'watching' || m.state === 'stalking' || m.state === 'chase';
+    if (showFace) {
+      const eyeGlow = veryClose || m.state === 'chase' ? 1 : 0.55;
+      ctx.fillStyle = `rgba(180,20,20,${eyeGlow})`;
+      ctx.beginPath(); ctx.arc(-2.6, -0.5, veryClose ? 1.6 : 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2.6, -0.5, veryClose ? 1.6 : 1.2, 0, Math.PI * 2); ctx.fill();
+      if (veryClose) {
+        // Sedikit rona cahaya di sekitar mata saat sangat dekat -> paling mengerikan
+        ctx.shadowColor = 'rgba(180,20,20,0.8)';
+        ctx.shadowBlur = 6;
+        ctx.beginPath(); ctx.arc(-2.6, -0.5, 1.6, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+    ctx.restore();
+
+    // --- Rim cahaya tipis di tepi siluet saat benar-benar kena sorot senter,
+    // biar terasa "diterangi", bukan cuma bentuk hitam datar. ---
+    if (lit) {
+      ctx.strokeStyle = 'rgba(255,235,190,0.35)';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.ellipse(sway, -6, 10, 30, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+// ---------- Kamera bergetar & efek "flash" merah singkat saat momen menakutkan ----------
+let screenShake = { time: 0, duration: 0, magnitude: 0 };
+function triggerScreenShake(magnitude, duration) {
+  screenShake.magnitude = magnitude;
+  screenShake.duration = duration;
+  screenShake.time = duration;
+}
+function getScreenShakeOffset() {
+  if (screenShake.time <= 0) return { x: 0, y: 0 };
+  const mag = screenShake.magnitude * (screenShake.time / screenShake.duration);
+  return { x: (Math.random()*2-1) * mag, y: (Math.random()*2-1) * mag };
+}
+let horrorFlashTimer = 0;
+function triggerJumpscare() {
+  triggerScreenShake(14, 0.5);
+  playJumpscareStinger();
+  horrorFlashTimer = 0.15;
+  horrorFear = Math.min(100, horrorFear + 40); // kena "serang" hantu -> lonjakan ketakutan besar
+}
+function drawHorrorFlash() {
+  if (horrorFlashTimer <= 0) return;
+  ctx.save();
+  ctx.fillStyle = `rgba(120,0,0,${(horrorFlashTimer / 0.15 * 0.35).toFixed(2)})`;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+// ---------- Getaran layar tambahan berdasar fear (60-80% = gemetar halus, 80-100%
+// makin kuat, 100% = panik penuh & berdenyut) — DIPISAH dari screenShake jumpscare
+// (screenShake tetap dipakai buat kejutan sesaat, ini buat getaran yang menerus). ----------
+function getFearShakeOffset() {
+  if (horrorFear < 60) return { x: 0, y: 0 };
+  let mag;
+  if (horrorFear >= 100) mag = 4.5 + Math.sin(performance.now() / 90) * 2.2; // panik: kuat & berdenyut
+  else if (horrorFear >= 80) mag = 2.2;
+  else mag = 1.1; // 60-80%: getar halus
+  return { x: (Math.random() * 2 - 1) * mag, y: (Math.random() * 2 - 1) * mag };
+}
+// ---------- Denyut merah di layar saat panik penuh (fear 100%), berdenyut ngikutin
+// ritme detak jantung biar makin terasa "hampir kehilangan kendali". ----------
+function drawHorrorPanicPulse() {
+  if (horrorFear < 100) return;
+  const pulse = (Math.sin(performance.now() / 220) + 1) / 2; // 0..1
+  ctx.save();
+  ctx.fillStyle = `rgba(140,0,0,${(0.10 + pulse * 0.22).toFixed(2)})`;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+// ---------- Audio horor: langkah kaki, dengungan ambient, geraman monster, jumpscare ----------
+let horrorAmbient = null;
+function startHorrorAmbient() {
+  const actx = getSfxCtx();
+  if (!actx || horrorAmbient) return;
+  const o1 = actx.createOscillator(), o2 = actx.createOscillator(), g = actx.createGain();
+  o1.type = 'sine'; o1.frequency.value = 45;
+  o2.type = 'sine'; o2.frequency.value = 47.5; // sedikit detune -> berdengung menegangkan
+  g.gain.value = 0.05;
+  o1.connect(g); o2.connect(g); g.connect(actx.destination);
+  o1.start(); o2.start();
+  horrorAmbient = { o1, o2 };
+}
+function stopHorrorAmbient() {
+  if (!horrorAmbient) return;
+  try { horrorAmbient.o1.stop(); horrorAmbient.o2.stop(); } catch (e) {}
+  horrorAmbient = null;
+}
+function playHorrorFootstep() {
+  const actx = getSfxCtx();
+  if (!actx) return;
+  const t0 = actx.currentTime, dur = 0.12;
+  const bufferSize = Math.floor(actx.sampleRate * dur);
+  const buffer = actx.createBuffer(1, bufferSize, actx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
+  const noise = actx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = actx.createBiquadFilter();
+  filter.type = 'lowpass'; filter.frequency.value = 300 + Math.random()*80;
+  const g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.22, t0+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  noise.connect(filter).connect(g).connect(actx.destination);
+  noise.start(t0); noise.stop(t0+dur);
+}
+function playMonsterGrowl(intensity) {
+  const actx = getSfxCtx();
+  if (!actx) return;
+  const t0 = actx.currentTime, dur = 0.5;
+  const bufferSize = Math.floor(actx.sampleRate * dur);
+  const buffer = actx.createBuffer(1, bufferSize, actx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random()*2-1;
+  const noise = actx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = actx.createBiquadFilter();
+  filter.type = 'lowpass'; filter.frequency.value = 180;
+  const g = actx.createGain();
+  const vol = Math.max(0.05, Math.min(0.5, intensity));
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0+0.08);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  noise.connect(filter).connect(g).connect(actx.destination);
+  noise.start(t0); noise.stop(t0+dur);
+}
+function playJumpscareStinger() {
+  const actx = getSfxCtx();
+  if (!actx) return;
+  const t0 = actx.currentTime;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(180, t0);
+  o.frequency.exponentialRampToValueAtTime(60, t0+0.4);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.55, t0+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0+0.45);
+  o.connect(g).connect(actx.destination);
+  o.start(t0); o.stop(t0+0.5);
+}
+// ---------- Suara napas berat/tercekat (fear 30-80%) — noise lembut dinaik-turunkan
+// pelan (tarik-embus napas) lewat filter lowpass, makin keras kalau volume dinaikkan. ----------
+function playFearBreath(volume) {
+  const actx = getSfxCtx();
+  if (!actx) return;
+  const t0 = actx.currentTime, dur = 1.1;
+  const bufferSize = Math.floor(actx.sampleRate * dur);
+  const buffer = actx.createBuffer(1, bufferSize, actx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const noise = actx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = actx.createBiquadFilter();
+  filter.type = 'bandpass'; filter.frequency.value = 420; filter.Q.value = 0.7;
+  const g = actx.createGain();
+  const vol = Math.max(0.05, Math.min(0.5, volume));
+  // Naik pelan (tarik napas) lalu turun pelan (embus napas) -> terasa seperti napas tercekat
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(vol, t0 + dur * 0.4);
+  g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+  noise.connect(filter).connect(g).connect(actx.destination);
+  noise.start(t0); noise.stop(t0 + dur);
+}
+// ---------- Detak jantung "lub-dub" (fear 80-100%) — 2 denyut oscillator rendah
+// berdekatan tiap kali dipanggil, makin sering dipanggil = makin cepat terdengar. ----------
+function playHeartbeat(volume) {
+  const actx = getSfxCtx();
+  if (!actx) return;
+  const vol = Math.max(0.05, Math.min(0.6, volume));
+  const beat = (delay, v) => {
+    const t0 = actx.currentTime + delay;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(72, t0);
+    o.frequency.exponentialRampToValueAtTime(40, t0 + 0.16);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(v, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+    o.connect(g).connect(actx.destination);
+    o.start(t0); o.stop(t0 + 0.2);
+  };
+  beat(0, vol);         // "lub"
+  beat(0.16, vol * 0.75); // "dub" (lebih pelan, jeda pendek)
+}
+let horrorStepTimer = 0;
+
 function loop(now) {
   const dt = Math.min(0.033, (now-last)/1000);
   last = now;
   update(dt);
   ctx.clearRect(0,0,W,H);
+
+  const horror = isHorrorMode();
+  // Getaran layar: gabungan guncangan jumpscare (sesaat) + getaran menerus akibat
+  // fear tinggi (60% ke atas = gemetar, 100% = panik penuh & berdenyut).
+  const shakeA = horror ? getScreenShakeOffset() : { x: 0, y: 0 };
+  const shakeB = horror ? getFearShakeOffset() : { x: 0, y: 0 };
+  const shake = { x: shakeA.x + shakeB.x, y: shakeA.y + shakeB.y };
+  // Blur penglihatan DIMATIKAN permanen: ctx.filter('blur') itu operasi paling berat
+  // di canvas mobile (apalagi digabung raymarch senter tiap frame), jadi FPS anjlok
+  // pas fear tinggi/hantu muncul. Rasa "makin panik" tetap dapat dari kombinasi
+  // guncangan layar (getScreenShakeOffset/getFearShakeOffset) + denyut merah panik
+  // (drawHorrorPanicPulse) + detak jantung & napas — tanpa perlu blur sama sekali.
+  const visionBlur = 0;
+  ctx.save();
+  ctx.translate(shake.x, shake.y);
+  if (visionBlur > 0) ctx.filter = `blur(${visionBlur}px)`;
   drawGround();
-  drawMapTintOverlay();
-  updateAndDrawAmbientParticles(dt);
-  drawMinimap();
+  ctx.filter = 'none';
+  ctx.restore();
+
+  if (horror) {
+    drawFlashlightOverlay(shake.x, shake.y);
+    drawHorrorFlash();
+    drawHorrorPanicPulse();
+    drawHorrorMissionHUD();
+    drawHorrorMinimap();
+    if (horrorGameWon) drawHorrorWinOverlay();
+  } else {
+    drawMapTintOverlay();
+    updateAndDrawAmbientParticles(dt);
+    drawMinimap();
+  }
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
